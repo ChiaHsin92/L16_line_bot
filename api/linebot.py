@@ -53,7 +53,7 @@ def handle_message(event):
 
 
     #按鈕樣板
-    if event.message.text == 'button':
+    if event.message.text == '咖啡':
         buttons_template = TemplateSendMessage(
             alt_text = 'buttons template',
             template = ButtonsTemplate(
@@ -63,7 +63,7 @@ def handle_message(event):
                 actions = [
                     MessageAction(
                         label = '咖啡有什麼好處',
-                        text = '讓人有精神'),
+                        text = '讓人有精神!!!'),
                     URIAction(
                         label = '伯朗咖啡',
                         uri = 'https://www.mrbrown.com.tw/')]
@@ -74,7 +74,7 @@ def handle_message(event):
 
 
     #carousel樣板
-    if event.message.text == 'carousel':
+    if event.message.text == '咖啡2個':
         carousel_template = TemplateSendMessage(
             alt_text = 'carousel template',
             template = CarouselTemplate(
@@ -110,7 +110,7 @@ def handle_message(event):
 
 
     #image carousel樣板
-    if event.message.text == 'image carousel':
+    if event.message.text == '照片':
         image_carousel_template = TemplateSendMessage(
             alt_text = 'image carousel template',
             template = ImageCarouselTemplate(
