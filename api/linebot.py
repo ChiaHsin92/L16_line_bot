@@ -41,7 +41,7 @@ def handle_message(event):
     user_id = event.source.user_id
     user_msg = event.message.text
 
-    if user_msg == '會員':
+    if user_msg == '會員專區':
         buttons_template = TemplateSendMessage(
             alt_text='會員福利選單',
             template=ButtonsTemplate(
