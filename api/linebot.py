@@ -67,7 +67,8 @@ def handle_message(event):
         # 連接 Google Sheets
         try:
             scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-            creds = ServiceAccountCredentials.from_json_keyfile_name('analog-marking-456108-f1-b9133a6bbffb.json', scope)
+            creds_dict = json.loads(os.getenv['GOOGLE_CREDENTIALS'])
+            creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
             client = gspread.authorize(creds)
             sheet = client.open("享受健身俱樂部").worksheet("會員資料")
             records = sheet.get_all_records()
