@@ -41,7 +41,7 @@ def handle_message(event):
     user_id = event.source.user_id
     user_msg = event.message.text
 
-    if user_msg == '會員':
+    if user_msg == '會員專區':
         buttons_template = TemplateSendMessage(
             alt_text='會員福利選單',
             template=ButtonsTemplate(
@@ -83,98 +83,89 @@ def handle_message(event):
 
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
 
+    # 原有功能保留
     elif user_msg == 'confirm':
         confirm_template = TemplateSendMessage(
-            alt_text='confirm template',
-            template=ConfirmTemplate(
-                text='drink coffee?',
-                actions=[
+            alt_text = 'confirm template',
+            template = ConfirmTemplate(
+                text = 'drink coffee?',
+                actions = [
                     MessageAction(
-                        label='yes',
-                        text='yes'),
+                        label = 'yes',
+                        text = 'yes'),
                     MessageAction(
-                        label='no',
-                        text='no')
-                ]
+                        label = 'no',
+                        text = 'no')]
+                )
             )
-        )
         line_bot_api.reply_message(event.reply_token, confirm_template)
 
     elif user_msg == '咖啡讚':
         buttons_template = TemplateSendMessage(
-            alt_text='buttons template',
-            template=ButtonsTemplate(
+            alt_text = 'buttons template',
+            template = ButtonsTemplate(
                 thumbnail_image_url='https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg',
-                title='Brown Cafe',
-                text='Enjoy your coffee',
-                actions=[
+                title = 'Brown Cafe',
+                text = 'Enjoy your coffee',
+                actions = [
                     MessageAction(
-                        label='咖啡有什麼好處?',
-                        text='讓人有精神!!!'),
+                        label = '咖啡有什麼好處?',
+                        text = '讓人有精神!!!'),
                     URIAction(
-                        label='伯朗咖啡',
-                        uri='https://www.mrbrown.com.tw/')
-                ]
+                        label = '伯朗咖啡',
+                        uri = 'https://www.mrbrown.com.tw/')]
+                )
             )
-        )
         line_bot_api.reply_message(event.reply_token, buttons_template)
 
     elif user_msg == '咖啡2個':
         carousel_template = TemplateSendMessage(
-            alt_text='carousel template',
-            template=CarouselTemplate(
-                columns=[
+            alt_text = 'carousel template',
+            template = CarouselTemplate(
+                columns = [
                     CarouselColumn(
-                        thumbnail_image_url='https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg',
-                        title='this is menu1',
-                        text='menu1',
-                        actions=[
+                        thumbnail_image_url = 'https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg',
+                        title = 'this is menu1',
+                        text = 'menu1',
+                        actions = [
                             MessageAction(
-                                label='咖啡有什麼好處',
-                                text='讓人有精神'),
+                                label = '咖啡有什麼好處',
+                                text = '讓人有精神'),
                             URIAction(
-                                label='伯朗咖啡',
-                                uri='https://www.mrbrown.com.tw/')
-                        ]
-                    ),
+                                label = '伯朗咖啡',
+                                uri = 'https://www.mrbrown.com.tw/')]),
                     CarouselColumn(
-                        thumbnail_image_url='https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg',
-                        title='this is menu2',
-                        text='menu2',
-                        actions=[
+                        thumbnail_image_url = 'https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg',
+                        title = 'this is menu2',
+                        text = 'menu2',
+                        actions = [
                             MessageAction(
-                                label='咖啡有什麼好處',
-                                text='讓人有精神'),
+                                label = '咖啡有什麼好處',
+                                text = '讓人有精神'),
                             URIAction(
-                                label='伯朗咖啡',
-                                uri='https://www.mrbrown.com.tw/')
-                        ]
-                    )
-                ]
+                                label = '伯朗咖啡',
+                                uri = 'https://www.mrbrown.com.tw/')])
+                ])
             )
-        )
         line_bot_api.reply_message(event.reply_token, carousel_template)
 
     elif user_msg == '照片':
         image_carousel_template = TemplateSendMessage(
-            alt_text='image carousel template',
-            template=ImageCarouselTemplate(
-                columns=[
+            alt_text = 'image carousel template',
+            template = ImageCarouselTemplate(
+                columns = [
                     ImageCarouselColumn(
-                        image_url='https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg',
-                        action=URIAction(
-                            label='伯朗咖啡',
-                            uri='https://www.mrbrown.com.tw/')
-                    ),
+                        image_url = 'https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg',
+                        action = URIAction(
+                            label = '伯朗咖啡',
+                            uri = 'https://www.mrbrown.com.tw/')),
                     ImageCarouselColumn(
-                        image_url='https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg',
-                        action=URIAction(
-                            label='伯朗咖啡',
-                            uri='https://www.mrbrown.com.tw/')
-                    )
-                ]
+                        image_url = 'https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg',
+                        action = URIAction(
+                            label = '伯朗咖啡',
+                            uri = 'https://www.mrbrown.com.tw/'))                       
+                ])
             )
-        )
         line_bot_api.reply_message(event.reply_token, image_carousel_template)
 
 if __name__ == "__main__":
