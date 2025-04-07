@@ -69,7 +69,7 @@ def handle_message(event):
         scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
         
         # 從環境變數讀取 JSON 並建立憑證
-        creds_dict = json.loads(os.environ['GOOGLE_CREDENTIALS_JSON'])
+        creds_dict = json.loads(os.environ['GOOGLE_CREDENTIALS'])
         creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
         
         client = gspread.authorize(creds)
