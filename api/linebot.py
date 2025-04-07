@@ -64,24 +64,26 @@ def handle_message(event):
         member_id = user_msg.strip()
         user_states.pop(user_id)
 
-        # 連接 Google Sheets
-        try:
-            scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-            creds_dict = json.loads(os.environ['GOOGLE_CREDENTIALS_JSON'])
-            creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
-            client = gspread.authorize(creds)
-            sheet = client.open("享受健身俱樂部").worksheet("會員資料")
-            records = sheet.get_all_records()
-
-
-            member_data = next((row for row in records if str(row['會員ID']) == member_id), None)
-            if member_data:
-                reply_text = f"姓名：{member_data['姓名']}\n會員類型：{member_data['會員類型']}\n會員點數：{member_data['會員點數']}\n會員到期日：{member_data['會員到期日']}"
-            else:
-                reply_text = '查無此會員編號，請確認後再試一次。'
-
-        except Exception as e:
-            reply_text = f"查詢失敗：{str(e)}"
+    # 連接 Google Sheets
+    try:
+        scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+        
+        # 從環境變數讀取 JSON 並建立憑證
+        creds_dict = json.loads(os.environ['GOOGLE_CREDENTIALS_JSON'])
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+        
+        client = gspread.authorize(creds)
+        sheet = client.open("享受健身俱樂部").worksheet("會員資料")
+        records = sheet.get_all_records()
+    
+        member_data = next((row for row in records if str(row['會員ID']) == member_id), None)
+        if member_data:
+            reply_text = f"姓名：{member_data['姓名']}\n會員類型：{member_data['會員類型']}\n會員點數：{member_data['會員點數']}\n會員到期日：{member_data['會員到期日']}"
+        else:
+            reply_text = '查無此會員編號，請確認後再試一次。'
+    
+    except Exception as e:
+        reply_text = f"查詢失敗：{str(e)}"
 
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
 
