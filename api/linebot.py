@@ -100,7 +100,7 @@ def handle_message(event):
             )
         line_bot_api.reply_message(event.reply_token, confirm_template)
 
-    elif user_msg == '咖啡':
+    elif user_msg == '咖啡讚':
         buttons_template = TemplateSendMessage(
             alt_text = 'buttons template',
             template = ButtonsTemplate(
