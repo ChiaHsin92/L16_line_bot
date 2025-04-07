@@ -9,17 +9,10 @@ import requests
 from bs4 import BeautifulSoup
 import random
 
-# 新增: Google Sheets 所需模組
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
-
 line_bot_api = LineBotApi(os.getenv("LINE_CHANNEL_ACCESS_TOKEN"))
 line_handler = WebhookHandler(os.getenv("LINE_CHANNEL_SECRET"))
 
 app = Flask(__name__)
-
-# 記錄會員資料查詢狀態
-user_states = {}
 
 @app.route('/')
 def home():
@@ -27,9 +20,12 @@ def home():
 
 @app.route("/webhook", methods=['POST'])
 def callback():
+    # get X-Line-Signature header value
     signature = request.headers['X-Line-Signature']
+    # get request body as text
     body = request.get_data(as_text=True)
     app.logger.info("Request body: " + body)
+    # handle webhook body
     try:
         line_handler.handle(body, signature)
     except InvalidSignatureError:
@@ -38,53 +34,8 @@ def callback():
 
 @line_handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    user_id = event.source.user_id
-    user_msg = event.message.text
 
-    if user_msg == '會員':
-        buttons_template = TemplateSendMessage(
-            alt_text='會員福利選單',
-            template=ButtonsTemplate(
-                title='會員專區',
-                text='請選擇功能',
-                actions=[
-                    MessageAction(
-                        label='查詢會員資料',
-                        text='查詢會員資料')
-                ]
-            )
-        )
-        line_bot_api.reply_message(event.reply_token, buttons_template)
-
-    elif user_msg == '查詢會員資料':
-        user_states[user_id] = 'awaiting_member_id'
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text='請輸入您的會員編號：'))
-
-    elif user_states.get(user_id) == 'awaiting_member_id':
-        member_id = user_msg.strip()
-        user_states.pop(user_id)
-
-        # 連接 Google Sheets
-        try:
-            scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-            creds = ServiceAccountCredentials.from_json_keyfile_name('analog-marking-456108-f1-b9133a6bbffb.json', scope)
-            client = gspread.authorize(creds)
-            sheet = client.open("享受健身俱樂部").worksheet("會員資料")
-            records = sheet.get_all_records()
-
-            member_data = next((row for row in records if str(row['會員ID']) == member_id), None)
-            if member_data:
-                reply_text = f"姓名：{member_data['姓名']}\n會員類型：{member_data['會員類型']}\n會員點數：{member_data['會員點數']}\n會員到期日：{member_data['會員到期日']}"
-            else:
-                reply_text = '查無此會員編號，請確認後再試一次。'
-
-        except Exception as e:
-            reply_text = f"查詢失敗：{str(e)}"
-
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
-
-    # 原有功能保留
-    elif user_msg == 'confirm':
+    if event.message.text == 'confirm':
         confirm_template = TemplateSendMessage(
             alt_text = 'confirm template',
             template = ConfirmTemplate(
@@ -100,7 +51,9 @@ def handle_message(event):
             )
         line_bot_api.reply_message(event.reply_token, confirm_template)
 
-    elif user_msg == '咖啡讚':
+
+    #按鈕樣板
+    if event.message.text == '會員':
         buttons_template = TemplateSendMessage(
             alt_text = 'buttons template',
             template = ButtonsTemplate(
@@ -109,20 +62,24 @@ def handle_message(event):
                 text = 'Enjoy your coffee',
                 actions = [
                     MessageAction(
-                        label = '咖啡有什麼好處?',
+                        label = '查詢會員資料',
                         text = '讓人有精神!!!'),
                     URIAction(
                         label = '伯朗咖啡',
                         uri = 'https://www.mrbrown.com.tw/')]
                 )
             )
+
         line_bot_api.reply_message(event.reply_token, buttons_template)
 
-    elif user_msg == '咖啡2個':
+
+    #carousel樣板
+    if event.message.text == '咖啡2個':
         carousel_template = TemplateSendMessage(
             alt_text = 'carousel template',
             template = CarouselTemplate(
                 columns = [
+                    #第一個
                     CarouselColumn(
                         thumbnail_image_url = 'https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg',
                         title = 'this is menu1',
@@ -134,6 +91,7 @@ def handle_message(event):
                             URIAction(
                                 label = '伯朗咖啡',
                                 uri = 'https://www.mrbrown.com.tw/')]),
+                    #第二個
                     CarouselColumn(
                         thumbnail_image_url = 'https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg',
                         title = 'this is menu2',
@@ -147,18 +105,23 @@ def handle_message(event):
                                 uri = 'https://www.mrbrown.com.tw/')])
                 ])
             )
+
         line_bot_api.reply_message(event.reply_token, carousel_template)
 
-    elif user_msg == '照片':
+
+    #image carousel樣板
+    if event.message.text == '照片':
         image_carousel_template = TemplateSendMessage(
             alt_text = 'image carousel template',
             template = ImageCarouselTemplate(
                 columns = [
+                    #第一張圖
                     ImageCarouselColumn(
                         image_url = 'https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg',
                         action = URIAction(
                             label = '伯朗咖啡',
                             uri = 'https://www.mrbrown.com.tw/')),
+                    #第二張圖
                     ImageCarouselColumn(
                         image_url = 'https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg',
                         action = URIAction(
@@ -166,6 +129,7 @@ def handle_message(event):
                             uri = 'https://www.mrbrown.com.tw/'))                       
                 ])
             )
+
         line_bot_api.reply_message(event.reply_token, image_carousel_template)
 
 if __name__ == "__main__":
