@@ -4,7 +4,6 @@ from linebot.exceptions import InvalidSignatureError
 from linebot.models import (
     MessageEvent,
     TextMessage,
-    TextSendMessage,
     TemplateSendMessage,
     ButtonsTemplate,
     MessageAction,
@@ -13,9 +12,10 @@ import os
 import json
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-import tempfile  # 導入 tempfile 模組
+import tempfile
 import sys
 import logging
+import requests
 
 app = Flask(__name__)
 
@@ -47,8 +47,7 @@ def get_gspread_client():
             mode="w+", delete=True, suffix=".json"
         ) as temp_file:
             temp_file.write(credentials_content)
-            temp_file.flush()  # 確保內容已寫入磁碟
-            
+            temp_file.flush()
             # 打印臨時檔案名稱
             logger.info(f"Temporary credentials file: {temp_file.name}")
 
@@ -60,13 +59,12 @@ def get_gspread_client():
             ]
             creds = ServiceAccountCredentials.from_json_keyfile_name(
                 temp_file.name, scope
-            )  # 使用臨時檔案名稱
+            )
             client = gspread.authorize(creds)
             return client
     except Exception as e:
         logger.error(f"Error authorizing with Google Sheets: {e}")
-        sys.exit(1)  # 發生錯誤時結束程式
-
+        sys.exit(1)
 
 @app.route("/")
 def home():
@@ -114,9 +112,10 @@ def handle_message(event):
         user_states.pop(user_id)
 
         try:
-            client = get_gspread_client()  # 獲取 gspread client
-            sheet = client.open("享瘦健身俱樂部").worksheet("會員資料")
-            records = sheet.get_all_records()
+            client = get_gspread_client()
+            sheet = client.open("享瘦健身俱樂部")
+            worksheet = sheet.worksheet("會員資料")
+            records = worksheet.get_all_records()
 
             member_data = next(
                 (row for row in records if str(row["會員ID"]) == member_id), None
@@ -132,6 +131,7 @@ def handle_message(event):
                 reply_text = "❌ 查無此會員編號，請確認後再試一次。"
 
         except Exception as e:
+            logger.error(f"Error during data retrieval: {e}", exc_info=True)
             reply_text = f"❌ 查詢失敗：{str(e)}"
 
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
