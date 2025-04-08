@@ -104,9 +104,7 @@ def handle_message(event):
 
     elif user_msg == "查詢會員資料":
         user_states[user_id] = "awaiting_member_id"
-        line_bot_api.reply_message(
-            event.reply_token, TextSendMessage(text="請輸入您的會員編號：")
-        )
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text='請輸入您的會員編號喔!'))
 
     elif user_states.get(user_id) == "awaiting_member_id":
         member_id = user_msg.strip()
