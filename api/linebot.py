@@ -15,8 +15,13 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import tempfile  # 導入 tempfile 模組
 import sys
+import logging
 
 app = Flask(__name__)
+
+# 設定日誌記錄
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # 從環境變數中獲取 LINE Bot 的憑證
 line_bot_api = LineBotApi(os.getenv("LINE_CHANNEL_ACCESS_TOKEN"))
@@ -43,6 +48,9 @@ def get_gspread_client():
         ) as temp_file:
             temp_file.write(credentials_content)
             temp_file.flush()  # 確保內容已寫入磁碟
+            
+            # 打印臨時檔案名稱
+            logger.info(f"Temporary credentials file: {temp_file.name}")
 
             # 設定 GOOGLE_APPLICATION_CREDENTIALS 環境變數
             os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = temp_file.name
@@ -56,7 +64,7 @@ def get_gspread_client():
             client = gspread.authorize(creds)
             return client
     except Exception as e:
-        print(f"Error authorizing with Google Sheets: {e}")
+        logger.error(f"Error authorizing with Google Sheets: {e}")
         sys.exit(1)  # 發生錯誤時結束程式
 
 
