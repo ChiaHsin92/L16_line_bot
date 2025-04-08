@@ -121,7 +121,7 @@ def handle_message(event):
         
                 # 移除會員編號中的非數字字元，並與使用者輸入比對
                 member_data = next(
-                    (row for row in records if re.sub(r'\D', '', str(row["會員ID"])) == member_id), None
+                    (row for row in records if re.sub(r'\D', '', str(row["會員編號"])) == member_id), None
                 )
                 if member_data:
                     reply_text = (
