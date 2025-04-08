@@ -62,11 +62,12 @@ def handle_message(event):
 
         try:
             scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-            
-            # 用絕對路徑讀取 JSON 憑證
+            # ✅ 正確方式：用 __file__ 找當前目錄下的憑證檔
             json_path = os.path.join(os.path.dirname(__file__), 'analog-marking-456108-f1-b9133a6bbffb.json')
-            creds = ServiceAccountCredentials.from_json_keyfile_name(json_path, scope)
-            
+                        # 讀取 JSON 憑證
+            with open(json_path) as source:
+                creds_dict = json.load(source)
+                        creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
             client = gspread.authorize(creds)
 
             sheet = client.open("享受健身俱樂部").worksheet("會員資料")
