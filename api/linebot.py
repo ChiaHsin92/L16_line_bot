@@ -4,6 +4,7 @@ from linebot.exceptions import InvalidSignatureError
 from linebot.models import (
     MessageEvent,
     TextMessage,
+    TextSendMessage,
     TemplateSendMessage,
     ButtonsTemplate,
     MessageAction,
@@ -15,7 +16,6 @@ from oauth2client.service_account import ServiceAccountCredentials
 import tempfile  # 導入 tempfile 模組
 import sys
 import logging
-import requests # 導入 requests
 
 app = Flask(__name__)
 
@@ -115,9 +115,8 @@ def handle_message(event):
 
         try:
             client = get_gspread_client()  # 獲取 gspread client
-            sheet = client.open("享受健身俱樂部")
-            worksheet = sheet.worksheet("會員資料")
-            records = worksheet.get_all_records()
+            sheet = client.open("享瘦健身俱樂部").worksheet("會員資料")
+            records = sheet.get_all_records()
 
             member_data = next(
                 (row for row in records if str(row["會員ID"]) == member_id), None
@@ -133,7 +132,6 @@ def handle_message(event):
                 reply_text = "❌ 查無此會員編號，請確認後再試一次。"
 
         except Exception as e:
-            logger.error(f"Error during data retrieval: {e}", exc_info=True)
             reply_text = f"❌ 查詢失敗：{str(e)}"
 
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
