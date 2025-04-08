@@ -93,7 +93,7 @@ def handle_message(event):
         buttons_template = TemplateSendMessage(
             alt_text="會員福利選單",
             template=ButtonsTemplate(
-                title="會員專區",
+                title="會員福利",
                 text="請選擇功能",
                 actions=[
                     MessageAction(label="查詢會員資料", text="查詢會員資料")
