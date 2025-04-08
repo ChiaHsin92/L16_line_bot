@@ -21,7 +21,7 @@ import re
 app = Flask(__name__)
 
 # 設定日誌記錄
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 # 從環境變數中獲取 LINE Bot 的憑證
@@ -30,6 +30,7 @@ line_handler = WebhookHandler(os.getenv("LINE_CHANNEL_SECRET"))
 
 # 用來追蹤每位用戶的狀態
 user_states = {}
+
 
 def get_gspread_client():
     """
@@ -42,7 +43,9 @@ def get_gspread_client():
 
     try:
         # 將憑證內容寫入臨時檔案
-        with tempfile.NamedTemporaryFile(mode="w+", delete=True, suffix=".json") as temp_file:
+        with tempfile.NamedTemporaryFile(
+            mode="w+", delete=True, suffix=".json"
+        ) as temp_file:
             temp_file.write(credentials_content)
             temp_file.flush()  # 確保內容已寫入磁碟
             logger.info(f"Temporary credentials file: {temp_file.name}")
@@ -55,12 +58,13 @@ def get_gspread_client():
             ]
             creds = ServiceAccountCredentials.from_json_keyfile_name(
                 temp_file.name, scope
-            )
+            )  # 使用臨時檔案名稱
             client = gspread.authorize(creds)
             return client
     except Exception as e:
         logger.error(f"Error authorizing with Google Sheets: {e}", exc_info=True)
-        sys.exit(1)
+        sys.exit(1)  # 發生錯誤時結束程式
+
 
 @app.route("/")
 def home():
@@ -75,7 +79,6 @@ def callback():
     try:
         line_handler.handle(body, signature)
     except InvalidSignatureError:
-        logger.error("Invalid signature error")
         abort(400)
     return "OK"
 
@@ -110,18 +113,27 @@ def handle_message(event):
 
         elif user_states.get(user_id) == "awaiting_member_id":
             member_id = user_msg.strip()
-            member_id = re.sub(r'\D', '', member_id) # 移除使用者輸入中的非數字字元
+            member_id = re.sub(r"\D", "", member_id)  # 移除使用者輸入中的非數字字元
             user_states.pop(user_id)
             logger.info(f"Received member ID: {member_id} from user {user_id}")
-        
+
             try:
                 client = get_gspread_client()
-                sheet = client.open("享瘦健身俱樂部").worksheet("會員資料")
+                # 使用您的試算表 ID
+                spreadsheet_id = "1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg"
+                sheet = client.open_by_id(spreadsheet_id).worksheet(
+                    "會員資料"
+                )  # 默認工作表名稱
                 records = sheet.get_all_records()
-        
+
                 # 移除會員編號中的非數字字元，並與使用者輸入比對
                 member_data = next(
-                    (row for row in records if re.sub(r'\D', '', str(row["會員編號"])) == member_id), None
+                    (
+                        row
+                        for row in records
+                        if re.sub(r"\D", "", str(row["會員編號"])) == member_id
+                    ),
+                    None,
                 )
                 if member_data:
                     reply_text = (
@@ -130,25 +142,29 @@ def handle_message(event):
                         f"會員點數：{member_data['會員點數']}\n"
                         f"會員到期日：{member_data['會員到期日']}"
                     )
-                    logger.info(f"Found member data for ID {member_id}: {reply_text}")
+                    logger.info(
+                        f"Found member data for ID {member_id}: {reply_text}"
+                    )
                 else:
                     reply_text = "❌ 查無此會員編號，請確認後再試一次。"
                     logger.warning(f"Member ID {member_id} not found")
-        
+
             except Exception as e:
                 reply_text = f"❌ 查詢失敗：{str(e)}"
-                logger.error(f"Error during member data retrieval: {e}", exc_info=True)
-        
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
-            logger.info(f"Sent reply: {reply_text} to user {user_id}")
+                logger.error(
+                    f"Error during member data retrieval: {e}", exc_info=True
+                )
 
+            line_bot_api.reply_message(
+                event.reply_token, TextSendMessage(text=reply_text)
+            )
+            logger.info(f"Sent reply: {reply_text} to user {user_id}")
 
     except Exception as e:
         logger.error(f"Error handling message: {e}", exc_info=True)
         line_bot_api.reply_message(
             event.reply_token, TextSendMessage(text=f"❌ 發生錯誤：{str(e)}")
         )
-
 
 
 if __name__ == "__main__":
