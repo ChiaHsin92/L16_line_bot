@@ -4,7 +4,6 @@ from linebot.exceptions import InvalidSignatureError
 from linebot.models import (
     MessageEvent,
     TextMessage,
-    TextSendMessage,
     TemplateSendMessage,
     ButtonsTemplate,
     MessageAction,
@@ -121,8 +120,8 @@ def handle_message(event):
                 client = get_gspread_client()
                 # 使用您的試算表 ID
                 spreadsheet_id = "1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg"
-                sheet = client.open_by_id(spreadsheet_id).worksheet(
-                    "會員資料"
+                sheet = client.open_by_key(spreadsheet_id).worksheet(  #  使用 open_by_key
+                    "工作表1"
                 )  # 默認工作表名稱
                 records = sheet.get_all_records()
 
@@ -131,7 +130,7 @@ def handle_message(event):
                     (
                         row
                         for row in records
-                        if re.sub(r"\D", "", str(row["會員編號"])) == member_id
+                        if re.sub(r"\D", "", str(row["會員ID"])) == member_id
                     ),
                     None,
                 )
@@ -169,4 +168,3 @@ def handle_message(event):
 
 if __name__ == "__main__":
     app.run()
-
