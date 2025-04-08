@@ -3,11 +3,12 @@ from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import (MessageEvent, TextMessage, TextSendMessage, TemplateSendMessage, CarouselColumn,
                             CarouselTemplate, MessageAction, URIAction, ImageCarouselColumn, ImageCarouselTemplate,
-                            ImageSendMessage, ButtonsTemplate, ConfirmTemplate)
+                            ButtonsTemplate, ConfirmTemplate)
 import os
 import requests
 from bs4 import BeautifulSoup
 import random
+import json  # ✅ 加入這行，解決 json 未定義問題
 
 # 新增: Google Sheets 所需模組
 import gspread
@@ -67,7 +68,7 @@ def handle_message(event):
         # 連接 Google Sheets
         try:
             scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-            creds_dict = json.loads(os.getenv['GOOGLE_CREDENTIALS'])
+            creds_dict = json.loads(os.getenv('GOOGLE_CREDENTIALS'))
             creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
             client = gspread.authorize(creds)
             sheet = client.open("享受健身俱樂部").worksheet("會員資料")
@@ -75,7 +76,12 @@ def handle_message(event):
 
             member_data = next((row for row in records if str(row['會員ID']) == member_id), None)
             if member_data:
-                reply_text = f"姓名：{member_data['姓名']}\n會員類型：{member_data['會員類型']}\n會員點數：{member_data['會員點數']}\n會員到期日：{member_data['會員到期日']}"
+                reply_text = (
+                    f"姓名：{member_data['姓名']}\n"
+                    f"會員類型：{member_data['會員類型']}\n"
+                    f"會員點數：{member_data['會員點數']}\n"
+                    f"會員到期日：{member_data['會員到期日']}"
+                )
             else:
                 reply_text = '查無此會員編號，請確認後再試一次。'
 
@@ -84,89 +90,78 @@ def handle_message(event):
 
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
 
-    # 原有功能保留
     elif user_msg == 'confirm':
         confirm_template = TemplateSendMessage(
-            alt_text = 'confirm template',
-            template = ConfirmTemplate(
-                text = 'drink coffee?',
-                actions = [
-                    MessageAction(
-                        label = 'yes',
-                        text = 'yes'),
-                    MessageAction(
-                        label = 'no',
-                        text = 'no')]
-                )
+            alt_text='confirm template',
+            template=ConfirmTemplate(
+                text='drink coffee?',
+                actions=[
+                    MessageAction(label='yes', text='yes'),
+                    MessageAction(label='no', text='no')
+                ]
             )
+        )
         line_bot_api.reply_message(event.reply_token, confirm_template)
 
     elif user_msg == '咖啡讚':
         buttons_template = TemplateSendMessage(
-            alt_text = 'buttons template',
-            template = ButtonsTemplate(
+            alt_text='buttons template',
+            template=ButtonsTemplate(
                 thumbnail_image_url='https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg',
-                title = 'Brown Cafe',
-                text = 'Enjoy your coffee',
-                actions = [
-                    MessageAction(
-                        label = '咖啡有什麼好處?',
-                        text = '讓人有精神!!!'),
-                    URIAction(
-                        label = '伯朗咖啡',
-                        uri = 'https://www.mrbrown.com.tw/')]
-                )
+                title='Brown Cafe',
+                text='Enjoy your coffee',
+                actions=[
+                    MessageAction(label='咖啡有什麼好處?', text='讓人有精神!!!'),
+                    URIAction(label='伯朗咖啡', uri='https://www.mrbrown.com.tw/')
+                ]
             )
+        )
         line_bot_api.reply_message(event.reply_token, buttons_template)
 
     elif user_msg == '咖啡2個':
         carousel_template = TemplateSendMessage(
-            alt_text = 'carousel template',
-            template = CarouselTemplate(
-                columns = [
+            alt_text='carousel template',
+            template=CarouselTemplate(
+                columns=[
                     CarouselColumn(
-                        thumbnail_image_url = 'https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg',
-                        title = 'this is menu1',
-                        text = 'menu1',
-                        actions = [
-                            MessageAction(
-                                label = '咖啡有什麼好處',
-                                text = '讓人有精神'),
-                            URIAction(
-                                label = '伯朗咖啡',
-                                uri = 'https://www.mrbrown.com.tw/')]),
+                        thumbnail_image_url='https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg',
+                        title='this is menu1',
+                        text='menu1',
+                        actions=[
+                            MessageAction(label='咖啡有什麼好處', text='讓人有精神'),
+                            URIAction(label='伯朗咖啡', uri='https://www.mrbrown.com.tw/')
+                        ]
+                    ),
                     CarouselColumn(
-                        thumbnail_image_url = 'https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg',
-                        title = 'this is menu2',
-                        text = 'menu2',
-                        actions = [
-                            MessageAction(
-                                label = '咖啡有什麼好處',
-                                text = '讓人有精神'),
-                            URIAction(
-                                label = '伯朗咖啡',
-                                uri = 'https://www.mrbrown.com.tw/')])
-                ])
+                        thumbnail_image_url='https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg',
+                        title='this is menu2',
+                        text='menu2',
+                        actions=[
+                            MessageAction(label='咖啡有什麼好處', text='讓人有精神'),
+                            URIAction(label='伯朗咖啡', uri='https://www.mrbrown.com.tw/')
+                        ]
+                    )
+                ]
             )
+        )
         line_bot_api.reply_message(event.reply_token, carousel_template)
 
     elif user_msg == '照片':
         image_carousel_template = TemplateSendMessage(
-            alt_text = 'image carousel template',
-            template = ImageCarouselTemplate(
-                columns = [
+            alt_text='image carousel template',
+            template=ImageCarouselTemplate(
+                columns=[
                     ImageCarouselColumn(
-                        image_url = 'https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg',
-                        action = URIAction(
-                            label = '伯朗咖啡',
-                            uri = 'https://www.mrbrown.com.tw/')),
+                        image_url='https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg',
+                        action=URIAction(label='伯朗咖啡', uri='https://www.mrbrown.com.tw/')
+                    ),
                     ImageCarouselColumn(
-                        image_url = 'https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg',
-                        action = URIAction(
-                            label = '伯朗咖啡',
-                            uri = 'https://www.mrbrown.com.tw/'))                       
-                ])
+                        image_url='https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg',
+                        action=URIAction(label='伯朗咖啡', uri='https://www.mrbrown.com.tw/')
+                    )
+                ]
             )
+        )
         line_bot_api.reply_message(event.reply_token, image_carousel_template)
 
 if __name__ == "__main__":
