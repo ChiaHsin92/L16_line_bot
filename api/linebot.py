@@ -102,7 +102,7 @@ def handle_message(event):
         )
         line_bot_api.reply_message(event.reply_token, buttons_template)
 
-    elif user_msg == "查詢會員資料":
+    elif user_msg =="查詢會員資料":
         user_states[user_id] = "awaiting_member_id"
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text='請輸入您的會員編號喔!'))
 
