@@ -110,14 +110,15 @@ def handle_message(event):
 
         elif user_states.get(user_id) == "awaiting_member_id":
             member_id = user_msg.strip()
+            member_id = re.sub(r'\D', '', member_id) # 移除使用者輸入中的非數字字元
             user_states.pop(user_id)
             logger.info(f"Received member ID: {member_id} from user {user_id}")
-
+        
             try:
                 client = get_gspread_client()
                 sheet = client.open("享瘦健身俱樂部").worksheet("會員資料")
                 records = sheet.get_all_records()
-
+        
                 # 移除會員編號中的非數字字元，並與使用者輸入比對
                 member_data = next(
                     (row for row in records if re.sub(r'\D', '', str(row["會員ID"])) == member_id), None
@@ -133,13 +134,14 @@ def handle_message(event):
                 else:
                     reply_text = "❌ 查無此會員編號，請確認後再試一次。"
                     logger.warning(f"Member ID {member_id} not found")
-
+        
             except Exception as e:
                 reply_text = f"❌ 查詢失敗：{str(e)}"
                 logger.error(f"Error during member data retrieval: {e}", exc_info=True)
-
+        
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
             logger.info(f"Sent reply: {reply_text} to user {user_id}")
+
 
     except Exception as e:
         logger.error(f"Error handling message: {e}", exc_info=True)
