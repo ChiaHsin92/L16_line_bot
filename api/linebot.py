@@ -82,25 +82,30 @@ def handle_message(event):
     elif user_msg == '查詢會員資料':
         user_states[user_id] = 'awaiting_member_id'
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text='請輸入您的會員編號：'))
-
+      
     elif user_states.get(user_id) == 'awaiting_member_id':
         member_id = user_msg.strip()
         user_states.pop(user_id)
-
+        logger.info(f"Searching for member ID: {member_id}")
+    
         try:
             client = get_gspread_client()
             sheet = client.open("享瘦健身俱樂部").worksheet("會員資料")
             records = sheet.get_all_records()
-
-            member_data = next((row for row in records if str(row['會員ID']) == member_id), None)
+    
+            # 使用正則表達式提取數字部分並移除空格
+            member_data = next((row for row in records if re.sub(r'\D', '', str(row['會員ID'])) == member_id), None)
             if member_data:
                 reply_text = f"✅ 查詢成功\n姓名：{member_data['姓名']}\n會員類型：{member_data['會員類型']}\n會員點數：{member_data['會員點數']}\n會員到期日：{member_data['會員到期日']}"
+                logger.info(f"Found member data: {member_data}")
             else:
                 reply_text = '❌ 查無此會員編號，請確認後再試一次。'
-
+                logger.info("Member data not found")
+    
         except Exception as e:
             reply_text = f"❌ 查詢失敗：{str(e)}"
-
+            logger.error(f"Error during data retrieval: {e}", exc_info=True)
+    
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
 
 if __name__ == "__main__":
