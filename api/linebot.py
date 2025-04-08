@@ -61,15 +61,18 @@ def handle_message(event):
         user_states.pop(user_id)
 
         try:
+            # 設定 Google Sheets API 權限範圍
             scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-            # ✅ 正確方式：用 __file__ 找當前目錄下的憑證檔
+            
+            # 讀取本地 JSON 憑證
             json_path = os.path.join(os.path.dirname(__file__), 'analog-marking-456108-f1-b9133a6bbffb.json')
-                        # 讀取 JSON 憑證
             with open(json_path) as source:
                 creds_dict = json.load(source)
-                        creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+            
+            creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
             client = gspread.authorize(creds)
 
+            # 開啟工作表並查詢資料
             sheet = client.open("享受健身俱樂部").worksheet("會員資料")
             records = sheet.get_all_records()
 
