@@ -87,6 +87,7 @@ def callback():
 def handle_message(event):
     user_id = event.source.user_id
     user_msg = event.message.text
+    logger.info(f"User message: {user_msg}")
 
     if user_msg == "會員專區":
         buttons_template = TemplateSendMessage(
