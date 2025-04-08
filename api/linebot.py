@@ -61,9 +61,12 @@ def handle_message(event):
         user_states.pop(user_id)
 
         try:
-            # 掛載認證（這裡使用你剛剛上傳的 json 檔案）
             scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-            creds = ServiceAccountCredentials.from_json_keyfile_name('analog-marking-456108-f1-b9133a6bbffb.json', scope)
+            
+            # 用絕對路徑讀取 JSON 憑證
+            json_path = os.path.join(os.path.dirname(__file__), 'analog-marking-456108-f1-b9133a6bbffb.json')
+            creds = ServiceAccountCredentials.from_json_keyfile_name(json_path, scope)
+            
             client = gspread.authorize(creds)
 
             sheet = client.open("享受健身俱樂部").worksheet("會員資料")
