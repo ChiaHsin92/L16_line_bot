@@ -69,7 +69,6 @@ def handle_message(event):
                 text="請選擇功能",
                 actions=[
                     MessageAction(label="查詢會員資料", text="查詢會員資料"),
-                    MessageAction(label="常見問題", text="常見問題")
                 ]
             )
         )
@@ -114,7 +113,7 @@ def handle_message(event):
             logger.error(f"查詢會員資料失敗：{e}", exc_info=True)
 
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
-    elif user_msg == "常見問題":
+    if user_msg == "常見問題":
         faq_categories = ["準備運動", "會員方案", "個人教練方案", "團體課程", "其他"]
         buttons = [
             MessageAction(label=cat, text=cat)
