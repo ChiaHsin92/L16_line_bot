@@ -124,7 +124,7 @@ def handle_message(event):
             template=ButtonsTemplate(
                 title="常見問題",
                 text="請選擇分類",
-                actions=buttons[:5]  # ButtonsTemplate 最多只能放 4 個按鈕
+                actions=buttons[:4]  # ButtonsTemplate 最多只能放 4 個按鈕
             )
         )
         line_bot_api.reply_message(event.reply_token, template)
