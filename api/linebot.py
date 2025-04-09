@@ -129,7 +129,7 @@ def handle_message(event):
         )
         line_bot_api.reply_message(event.reply_token, template)
 
-    elif user_msg in ["準備運動", "會員方案", "個人教練方案", "團體課程", "其他"]:
+    elif user_msg in ["準備運動", "會員方案", "個人教練課程", "團體課程", "其他", "其他"]:
         try:
             client = get_gspread_client()
             sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("常見問題")
