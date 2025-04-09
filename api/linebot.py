@@ -129,7 +129,7 @@ def handle_message(event):
         )
         line_bot_api.reply_message(event.reply_token, template)
 
-    elif user_msg == "課程":
+    elif user_msg in ["課程"]:
         confirm_template = TemplateSendMessage(
             alt_text = 'confirm template',
             template = ConfirmTemplate(
