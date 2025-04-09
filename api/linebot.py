@@ -111,10 +111,10 @@ def handle_message(event):
         except Exception as e:
             reply_text = f"❌ 查詢失敗：{str(e)}"
             logger.error(f"查詢會員資料失敗：{e}", exc_info=True)
-
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
+        
     if user_msg == "常見問題":
-        faq_categories = ["準備運動", "會員方案", "個人教練方案", "團體課程", "其他"]
+        faq_categories = ["準備運動", "會員方案", "課程", "其他"]
         buttons = [
             MessageAction(label=cat, text=cat)
             for cat in faq_categories
@@ -128,6 +128,22 @@ def handle_message(event):
             )
         )
         line_bot_api.reply_message(event.reply_token, template)
+
+    elif user_msg == "課程":
+        confirm_template = TemplateSendMessage(
+            alt_text = 'confirm template',
+            template = ConfirmTemplate(
+                text = '請選擇課程種類?',
+                actions = [
+                    MessageAction(
+                        label = '個人教練',
+                        text = '個人教練課程'),
+                    MessageAction(
+                        label = '團體',
+                        text = '團體課程')]
+                )
+            )
+        line_bot_api.reply_message(event.reply_token, confirm_template)
 
     elif user_msg in ["準備運動", "會員方案", "個人教練課程", "團體課程", "其他"]:
         try:
