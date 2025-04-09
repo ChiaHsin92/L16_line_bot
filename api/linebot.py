@@ -124,12 +124,12 @@ def handle_message(event):
             template=ButtonsTemplate(
                 title="常見問題",
                 text="請選擇分類",
-                actions=buttons[:4]  # ButtonsTemplate 最多只能放 4 個按鈕
+                actions=buttons[:5]  # ButtonsTemplate 最多只能放 4 個按鈕
             )
         )
         line_bot_api.reply_message(event.reply_token, template)
 
-    elif user_msg in ["準備運動", "會員方案", "個人教練課程", "團體課程", "其他", "其他"]:
+    elif user_msg in ["準備運動", "會員方案", "個人教練課程", "團體課程", "其他"]:
         try:
             client = get_gspread_client()
             sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("常見問題")
