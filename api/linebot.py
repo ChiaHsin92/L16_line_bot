@@ -95,7 +95,7 @@ def handle_message(event):
                 records = sheet.get_all_records()
 
                 member_data = next(
-                    (row for row in records if re.sub(r"\D", "", str(row["會員編號"])) == member_id),
+                    (row for row in records if re.sub(r"\D", "", str(row["電話"])) == member_id),
                     None
                 )
 
