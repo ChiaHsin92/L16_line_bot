@@ -134,7 +134,7 @@ def handle_message(event):
         confirm_template = TemplateSendMessage(
             alt_text = 'confirm template',
             template = ConfirmTemplate(
-                text = '請選擇課程種類?',
+                text = '🧾',
                 actions = [
                     MessageAction(
                         label = '個人教練',
