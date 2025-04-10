@@ -210,7 +210,7 @@ def handle_message(event):
                         "type": "bubble",
                         "hero": {
                             "type": "image",
-                            "url": "https://example.com/facility.jpg",  # 替換為場地圖片
+                            "url": "https://i.imgur.com/d3v7RxR.png",  # 替換為場地圖片
                             "size": "full",
                             "aspectRatio": "20:13",
                             "aspectMode": "cover"
@@ -307,7 +307,7 @@ def handle_message(event):
                         "type": "bubble",
                         "hero": {
                             "type": "image",
-                            "url": "https://example.com/team.jpg",  # 替換為團隊圖片
+                            "url": "https://i.imgur.com/izThqNv.png",  # 替換為團隊圖片
                             "size": "full",
                             "aspectRatio": "20:13",
                             "aspectMode": "cover"
