@@ -263,7 +263,7 @@ def handle_message(event):
                         "type": "bubble",
                         "hero": {
                             "type": "image",
-                            "url": "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.104.com.tw%2Fjob%2F7cuzp&psig=AOvVaw1IL45_SbRekKEI2FSBOO87&ust=1744370451446000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCPi9-saszYwDFQAAAAAdAAAAABBB",  # 替換為課程圖片
+                            "url": "https://imgur.com/5034d0fb-43b6-4750-bf8b-e6fc3f9c9150",  # 替換為課程圖片
                             "size": "full",
                             "aspectRatio": "20:13",
                             "aspectMode": "cover"
