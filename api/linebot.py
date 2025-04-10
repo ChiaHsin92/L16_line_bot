@@ -199,7 +199,8 @@ def handle_message(event):
         except Exception as e:
             logger.error(f"常見問題查詢錯誤：{e}", exc_info=True)
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 查詢失敗，請稍後再試。"))
-        elif user_msg == "更多功能":
+        
+    elif user_msg == "更多功能":
         messages = [
             TemplateSendMessage(
                 alt_text="場地介紹",
@@ -238,5 +239,6 @@ def handle_message(event):
             )
         ]
         line_bot_api.reply_message(event.reply_token, messages)
+
 if __name__ == "__main__":
     app.run()
