@@ -199,46 +199,168 @@ def handle_message(event):
         except Exception as e:
             logger.error(f"常見問題查詢錯誤：{e}", exc_info=True)
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 查詢失敗，請稍後再試。"))
-        
+            
     elif user_msg == "更多功能":
-        messages = [
-            TemplateSendMessage(
-                alt_text="場地介紹",
-                template=ButtonsTemplate(
-                    thumbnail_image_url="https://example.com/facility.jpg",  # 替換為場地圖片
-                    title="🏟️ 場地介紹",
-                    text="了解我們的設施與環境",
-                    actions=[
-                        MessageAction(label="場地介紹", text="場地介紹"),
-                        MessageAction(label="查看照片", text="場地照片")
-                    ]
-                )
-            ),
-            TemplateSendMessage(
-                alt_text="課程總覽",
-                template=ButtonsTemplate(
-                    thumbnail_image_url="https://example.com/course.jpg",  # 替換為課程圖片
-                    title="📚 課程總覽",
-                    text="看看我們提供的課程類型",
-                    actions=[
-                        MessageAction(label="查看課程", text="課程")
-                    ]
-                )
-            ),
-            TemplateSendMessage(
-                alt_text="團隊介紹",
-                template=ButtonsTemplate(
-                    thumbnail_image_url="https://example.com/team.jpg",  # 替換為團隊圖片
-                    title="👥 團隊介紹",
-                    text="認識我們的專業團隊",
-                    actions=[
-                        MessageAction(label="教練介紹", text="教練介紹"),
-                        MessageAction(label="團隊頁面", text="團隊連結")
-                    ]
-                )
-            )
-        ]
-        line_bot_api.reply_message(event.reply_token, messages)
+        flex_message = FlexSendMessage(
+            alt_text="更多功能選單",
+            contents={
+                "type": "carousel",
+                "contents": [
+                    {
+                        "type": "bubble",
+                        "hero": {
+                            "type": "image",
+                            "url": "https://example.com/facility.jpg",  # 替換為場地圖片
+                            "size": "full",
+                            "aspectRatio": "20:13",
+                            "aspectMode": "cover"
+                        },
+                        "body": {
+                            "type": "box",
+                            "layout": "vertical",
+                            "contents": [
+                                {
+                                    "type": "text",
+                                    "text": "🏟️ 場地介紹",
+                                    "weight": "bold",
+                                    "size": "xl"
+                                },
+                                {
+                                    "type": "text",
+                                    "text": "探索我們的健身空間",
+                                    "size": "sm",
+                                    "wrap": True,
+                                    "color": "#666666"
+                                }
+                            ]
+                        },
+                        "footer": {
+                            "type": "box",
+                            "layout": "vertical",
+                            "spacing": "sm",
+                            "contents": [
+                                {
+                                    "type": "button",
+                                    "action": {
+                                        "type": "message",
+                                        "label": "場地介紹",
+                                        "text": "場地介紹"
+                                    },
+                                    "style": "primary"
+                                },
+                                {
+                                    "type": "button",
+                                    "action": {
+                                        "type": "message",
+                                        "label": "查看照片",
+                                        "text": "場地照片"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "type": "bubble",
+                        "hero": {
+                            "type": "image",
+                            "url": "https://example.com/course.jpg",  # 替換為課程圖片
+                            "size": "full",
+                            "aspectRatio": "20:13",
+                            "aspectMode": "cover"
+                        },
+                        "body": {
+                            "type": "box",
+                            "layout": "vertical",
+                            "contents": [
+                                {
+                                    "type": "text",
+                                    "text": "📚 課程介紹",
+                                    "weight": "bold",
+                                    "size": "xl"
+                                },
+                                {
+                                    "type": "text",
+                                    "text": "了解我們提供的課程類型",
+                                    "size": "sm",
+                                    "wrap": True,
+                                    "color": "#666666"
+                                }
+                            ]
+                        },
+                        "footer": {
+                            "type": "box",
+                            "layout": "vertical",
+                            "contents": [
+                                {
+                                    "type": "button",
+                                    "action": {
+                                        "type": "message",
+                                        "label": "查看課程",
+                                        "text": "課程"
+                                    },
+                                    "style": "primary"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "type": "bubble",
+                        "hero": {
+                            "type": "image",
+                            "url": "https://example.com/team.jpg",  # 替換為團隊圖片
+                            "size": "full",
+                            "aspectRatio": "20:13",
+                            "aspectMode": "cover"
+                        },
+                        "body": {
+                            "type": "box",
+                            "layout": "vertical",
+                            "contents": [
+                                {
+                                    "type": "text",
+                                    "text": "👥 團隊介紹",
+                                    "weight": "bold",
+                                    "size": "xl"
+                                },
+                                {
+                                    "type": "text",
+                                    "text": "認識我們的教練與團隊",
+                                    "size": "sm",
+                                    "wrap": True,
+                                    "color": "#666666"
+                                }
+                            ]
+                        },
+                        "footer": {
+                            "type": "box",
+                            "layout": "vertical",
+                            "spacing": "sm",
+                            "contents": [
+                                {
+                                    "type": "button",
+                                    "action": {
+                                        "type": "message",
+                                        "label": "教練介紹",
+                                        "text": "教練介紹"
+                                    },
+                                    "style": "primary"
+                                },
+                                {
+                                    "type": "button",
+                                    "action": {
+                                        "type": "message",
+                                        "label": "團隊頁面",
+                                        "text": "團隊連結"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        )
+        line_bot_api.reply_message(event.reply_token, flex_message)
+    
 
 if __name__ == "__main__":
     app.run()
