@@ -243,8 +243,8 @@ def handle_message(event):
                                     "type": "button",
                                     "action": {
                                         "type": "message",
-                                        "label": "場地介紹",
-                                        "text": "場地介紹"
+                                        "label": "健身/重訓",
+                                        "text": "健身/重訓"
                                     },
                                     "style": "primary"
                                 },
@@ -252,8 +252,8 @@ def handle_message(event):
                                     "type": "button",
                                     "action": {
                                         "type": "message",
-                                        "label": "查看照片",
-                                        "text": "場地照片"
+                                        "label": "上課教室",
+                                        "text": "上課教室"
                                     }
                                 }
                             ]
@@ -263,7 +263,7 @@ def handle_message(event):
                         "type": "bubble",
                         "hero": {
                             "type": "image",
-                            "url": "https://example.com/course.jpg",  # 替換為課程圖片
+                            "url": "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.104.com.tw%2Fjob%2F7cuzp&psig=AOvVaw1IL45_SbRekKEI2FSBOO87&ust=1744370451446000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCPi9-saszYwDFQAAAAAdAAAAABBB",  # 替換為課程圖片
                             "size": "full",
                             "aspectRatio": "20:13",
                             "aspectMode": "cover"
@@ -295,8 +295,8 @@ def handle_message(event):
                                     "type": "button",
                                     "action": {
                                         "type": "message",
-                                        "label": "查看課程",
-                                        "text": "課程"
+                                        "label": "查看課程內容",
+                                        "text": "課程內容"
                                     },
                                     "style": "primary"
                                 }
@@ -340,8 +340,8 @@ def handle_message(event):
                                     "type": "button",
                                     "action": {
                                         "type": "message",
-                                        "label": "教練介紹",
-                                        "text": "教練介紹"
+                                        "label": "健身教練",
+                                        "text": "健身教練"
                                     },
                                     "style": "primary"
                                 },
@@ -349,8 +349,8 @@ def handle_message(event):
                                     "type": "button",
                                     "action": {
                                         "type": "message",
-                                        "label": "團隊頁面",
-                                        "text": "團隊連結"
+                                        "label": "課程老師",
+                                        "text": "課程老師"
                                     }
                                 }
                             ]
