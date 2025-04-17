@@ -464,7 +464,7 @@ def handle_message(event):
                         "contents": [
                             {
                                 "type": "text",
-                                "text": 🏟️ matched["名稱"],
+                                "text":"🏟️" matched["名稱"],
                                 "weight": "bold",
                                 "size": "xl",
                                 "wrap": True
