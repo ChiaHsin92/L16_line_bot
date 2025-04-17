@@ -3,7 +3,7 @@ from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import (
     MessageEvent, TextMessage, TextSendMessage,
-    TemplateSendMessage, ButtonsTemplate, MessageAction, FlexSendMessage, ConfirmTemplate
+    TemplateSendMessage, ButtonsTemplate, MessageAction, FlexSendMessage, ConfirmTemplate,ImageCarouselTemplate
 )
 
 import os
@@ -367,7 +367,42 @@ def handle_message(event):
             }
         )
         line_bot_api.reply_message(event.reply_token, flex_message)
-    
+        
+    elif user_msg == "上課教室":
+        try:
+            client = get_gspread_client()
+            sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("場地資料")
+            records = sheet.get_all_records()
+            matched = [row for row in records if row["類型"] == "上課教室"]
+
+            if not matched:
+                line_bot_api.reply_message(event.reply_token, TextSendMessage(text="找不到上課教室相關資料。"))
+                return
+
+            from linebot.models import ImageCarouselTemplate, ImageCarouselColumn
+
+            columns = []
+            for item in matched[:10]:  # 最多10筆
+                columns.append(
+                    ImageCarouselColumn(
+                        image_url=item["圖片"],
+                        action=MessageAction(
+                            label=item["名稱"],
+                            text=item["名稱"]
+                        )
+                    )
+                )
+
+            carousel = TemplateSendMessage(
+                alt_text="上課教室列表",
+                template=ImageCarouselTemplate(columns=columns)
+            )
+            line_bot_api.reply_message(event.reply_token, carousel)
+
+        except Exception as e:
+            logger.error(f"查詢上課教室錯誤：{e}", exc_info=True)
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 查詢失敗，請稍後再試。"))
+
 
 if __name__ == "__main__":
     app.run()
