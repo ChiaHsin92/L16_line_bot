@@ -371,43 +371,40 @@ def handle_message(event):
         )
         line_bot_api.reply_message(event.reply_token, flex_message)
 
+
     elif user_msg == "上課教室":
         try:
             client = get_gspread_client()
             sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("場地資料")
             records = sheet.get_all_records()
 
-            filtered = [row for row in records if row.get("類型", "").strip() == "上課教室"]
+            matched = [
+                row for row in records
+                if row.get("類型", "").strip() == "上課教室" and row.get("圖片", "").startswith("https")
+            ]
 
-            if not filtered:
-                line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 查無相關場地資料"))
+            if not matched:
+                line_bot_api.reply_message(
+                    event.reply_token, TextSendMessage(text="⚠ 查無『上課教室』的場地資料")
+                )
                 return
 
-            image_columns = []
-            for row in filtered:
-                image_url = row.get("圖片", "").strip()
-                name = row.get("名稱", "").strip()
-                if image_url and name:
-                    image_columns.append(
-                        ImageCarouselColumn(
-                            image_url=image_url,
-                            action=MessageAction(label=name, text=name)
-                        )
-                    )
-
-            if not image_columns:
-                line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 無有效圖片可顯示"))
-                return
+            image_columns = [
+                ImageCarouselColumn(
+                    image_url=row["圖片"],
+                    action=MessageAction(label=row["名稱"], text=row["名稱"])
+                ) for row in matched
+            ]
 
             carousel_template = TemplateSendMessage(
-                alt_text="上課教室清單",
-                template=ImageCarouselTemplate(columns=image_columns[:10])  # 最多顯示10筆
+                alt_text="上課教室場地列表",
+                template=ImageCarouselTemplate(columns=image_columns[:10])  # 最多 10 張圖
             )
             line_bot_api.reply_message(event.reply_token, carousel_template)
 
         except Exception as e:
             logger.error(f"上課教室查詢失敗：{e}", exc_info=True)
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 查詢失敗，請稍後再試。"))
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 無有效圖片可顯示"))
 
 
 
