@@ -377,35 +377,76 @@ def handle_message(event):
             client = get_gspread_client()
             sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("場地資料")
             records = sheet.get_all_records()
-    
+
             matched = [
                 row for row in records
                 if row.get("類型", "").strip() == "上課教室" and row.get("圖片1", "").startswith("https")
             ]
-    
+
             if not matched:
                 line_bot_api.reply_message(
                     event.reply_token, TextSendMessage(text="⚠ 查無『上課教室』的場地資料")
                 )
                 return
-    
+
             image_columns = [
                 ImageCarouselColumn(
                     image_url=row["圖片1"],
                     action=MessageAction(label=row.get("名稱", "查看詳情"), text=row.get("名稱", "查看詳情"))
                 ) for row in matched
             ]
-    
+
             carousel = TemplateSendMessage(
                 alt_text="上課教室場地列表",
                 template=ImageCarouselTemplate(columns=image_columns[:10])
             )
             line_bot_api.reply_message(event.reply_token, carousel)
-    
 
         except Exception as e:
             logger.error(f"上課教室查詢失敗：{e}", exc_info=True)
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"⚠ 發生錯誤：{e}"))
+
+    # 使用者點圖片後回傳場地名稱
+    elif user_msg:
+        try:
+            client = get_gspread_client()
+            sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("場地資料")
+            records = sheet.get_all_records()
+
+            matched = next(
+                (row for row in records if row.get("名稱", "").strip() == user_msg.strip()),
+                None
+            )
+
+            if matched:
+                image_url = matched.get("圖片1", "")
+                desc = matched.get("描述", "此場地尚無詳細描述")
+                title = matched.get("名稱", "場地介紹")
+
+                columns = []
+
+                if image_url.startswith("https"):
+                    columns.append(ImageCarouselColumn(
+                        image_url=image_url,
+                        action=MessageAction(label=title, text=title)
+                    ))
+
+                reply = [
+                    TextSendMessage(text=f"🏟️ {title}\n📖 {desc}")
+                ]
+
+                if columns:
+                    reply.insert(0, TemplateSendMessage(
+                        alt_text="場地圖片",
+                        template=ImageCarouselTemplate(columns=columns)
+                    ))
+
+                line_bot_api.reply_message(event.reply_token, reply)
+                return
+
+        except Exception as e:
+            logger.error(f"場地名稱查詢失敗：{e}", exc_info=True)
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 查詢失敗，請稍後再試。"))
 
 
 if __name__ == "__main__":
