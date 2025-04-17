@@ -76,26 +76,33 @@ def handle_message(event):
         line_bot_api.reply_message(event.reply_token, template)
 
     elif user_msg == "查詢會員資料":
-        user_states[user_id] = "awaiting_member_id"
+        user_states[user_id] = "awaiting_member_info"
         line_bot_api.reply_message(
             event.reply_token,
-            TextSendMessage(text="請輸入您的會員編號：")
+            TextSendMessage(text="請輸入您的會員編號或姓名：")
         )
 
-    elif user_states.get(user_id) == "awaiting_member_id":
-        member_id = re.sub(r"\D", "", user_msg)
+    elif user_states.get(user_id) == "awaiting_member_info":
         user_states.pop(user_id)
-
+        keyword = user_msg.strip()
+    
         try:
             client = get_gspread_client()
             sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("會員資料")
             records = sheet.get_all_records()
-
-            member_data = next(
-                (row for row in records if re.sub(r"\D", "", str(row["會員編號"])) == member_id),
-                None
-            )
-
+    
+            # 判斷輸入是編號還是姓名
+            if keyword.isdigit():
+                member_data = next(
+                    (row for row in records if re.sub(r"\D", "", str(row["會員編號"])) == keyword),
+                    None
+                )
+            else:
+                member_data = next(
+                    (row for row in records if keyword in row["姓名"]),
+                    None
+                )
+    
             if member_data:
                 reply_text = (
                     f"✅ 查詢成功\n"
@@ -107,11 +114,12 @@ def handle_message(event):
                     f"⏳ 到期日：{member_data['會員到期日']}"
                 )
             else:
-                reply_text = "❌ 查無此會員編號，請確認後再試一次。"
-
+                reply_text = "❌ 查無此會員資料，請確認後再試一次。"
+    
         except Exception as e:
             reply_text = f"❌ 查詢失敗：{str(e)}"
-            logger.error(f"查詢會員資料失敗：{e}", exc_info=True)
+            logger.error(f"會員查詢錯誤：{e}", exc_info=True)
+    
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
         
     if user_msg == "常見問題":
