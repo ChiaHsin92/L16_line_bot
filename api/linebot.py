@@ -96,8 +96,8 @@ def handle_message(event):
                 # 純數字 → 當成會員編號
                 clean_keyword = re.sub(r"\D", "", keyword)
                 member_data = next(
-                    (row for row in records if re.sub(r"\D", "", str(row["會員編號"])) == clean_keyword),
-                    None
+                    (row for row in records if str(row["會員編號"]).strip().upper() == clean_keyword),
+                None
                 )
             else:
                 # 其他 → 當作姓名
