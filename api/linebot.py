@@ -407,46 +407,60 @@ def handle_message(event):
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"⚠ 發生錯誤：{e}"))
 
     # 使用者點圖片後回傳場地名稱
-    elif user_msg:
+    elif user_msg in [row.get("名稱") for row in records if "名稱" in row]:
         try:
+            # 再次連線避免資料斷掉
             client = get_gspread_client()
             sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("場地資料")
             records = sheet.get_all_records()
 
-            matched = next(
-                (row for row in records if row.get("名稱", "").strip() == user_msg.strip()),
-                None
-            )
+            matched = next((row for row in records if row.get("名稱") == user_msg), None)
 
             if matched:
-                image_url = matched.get("圖片1", "")
-                desc = matched.get("描述", "此場地尚無詳細描述")
-                title = matched.get("名稱", "場地介紹")
+                bubble = {
+                    "type": "bubble",
+                    "hero": {
+                        "type": "image",
+                        "url": matched["圖片1"],
+                        "size": "full",
+                        "aspectRatio": "20:13",
+                        "aspectMode": "cover"
+                    },
+                    "body": {
+                        "type": "box",
+                        "layout": "vertical",
+                        "spacing": "sm",
+                        "contents": [
+                            {
+                                "type": "text",
+                                "text": matched["名稱"],
+                                "weight": "bold",
+                                "size": "xl",
+                                "wrap": True
+                            },
+                            {
+                                "type": "text",
+                                "text": matched.get("說明", "（尚無說明）"),
+                                "size": "sm",
+                                "wrap": True,
+                                "color": "#666666"
+                            }
+                        ]
+                    }
+                }
 
-                columns = []
-
-                if image_url.startswith("https"):
-                    columns.append(ImageCarouselColumn(
-                        image_url=image_url,
-                        action=MessageAction(label=title, text=title)
-                    ))
-
-                reply = [
-                    TextSendMessage(text=f"🏟️ {title}\n📖 {desc}")
-                ]
-
-                if columns:
-                    reply.insert(0, TemplateSendMessage(
-                        alt_text="場地圖片",
-                        template=ImageCarouselTemplate(columns=columns)
-                    ))
-
-                line_bot_api.reply_message(event.reply_token, reply)
-                return
+                flex_msg = FlexSendMessage(
+                    alt_text=f"{matched['名稱']} 詳細資訊",
+                    contents=bubble
+                )
+                line_bot_api.reply_message(event.reply_token, flex_msg)
+            else:
+                line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 查無此場地資料"))
 
         except Exception as e:
-            logger.error(f"場地名稱查詢失敗：{e}", exc_info=True)
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 查詢失敗，請稍後再試。"))
+            logger.error(f"場地詳情查詢失敗：{e}", exc_info=True)
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"⚠ 查詢錯誤：{e}"))
+
 
 
 if __name__ == "__main__":
