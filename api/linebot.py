@@ -380,7 +380,7 @@ def handle_message(event):
 
             matched = [
                 row for row in records
-                if row.get("類型", "").strip() == "上課教室" and row.get("圖片1", "").startswith("https")
+                if row.get("類型", "").strip() == "上課教室" and row.get("圖片1", "").strip().startswith("https")
             ]
 
             if not matched:
