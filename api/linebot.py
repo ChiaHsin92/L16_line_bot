@@ -380,7 +380,7 @@ def handle_message(event):
 
             matched = [
                 row for row in records
-                if row.get("類型", "").strip() == "上課教室" and row.get("圖片", "").startswith("https")
+                if row.get("類型", "").strip() == "上課教室" and row.get("圖片1", "").startswith("https")
             ]
 
             if not matched:
@@ -391,7 +391,7 @@ def handle_message(event):
 
             image_columns = [
                 ImageCarouselColumn(
-                    image_url=row["圖片"],
+                    image_url=row["圖片1"],
                     action=MessageAction(label=row["名稱"], text=row["名稱"])
                 ) for row in matched
             ]
