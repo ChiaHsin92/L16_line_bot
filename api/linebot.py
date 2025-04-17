@@ -112,6 +112,9 @@ def handle_message(event):
                     f"🎯 點數：{member_data['會員點數']}\n"
                     f"⏳ 到期日：{member_data['會員到期日']}"
                 )
+                flex_message = FlexSendMessage(
+                    alt_text=f"{member_data['姓名']}的會員資料",
+                )
             else:
                 reply_text = "❌ 查無此會員資料，請確認後再試一次。"
     
@@ -373,35 +376,43 @@ def handle_message(event):
             client = get_gspread_client()
             sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("場地資料")
             records = sheet.get_all_records()
-            matched = [row for row in records if row["類型"] == "上課教室"]
+            matched = [row for row in records if row.get("類型") == "上課教室"]
 
             if not matched:
-                line_bot_api.reply_message(event.reply_token, TextSendMessage(text="找不到上課教室相關資料。"))
+                line_bot_api.reply_message(event.reply_token, TextSendMessage(text="❌ 查無上課教室相關資料。"))
                 return
 
-            from linebot.models import ImageCarouselTemplate, ImageCarouselColumn
+            image_columns = []
+            for item in matched[:10]:  # 最多 10 張
+                if item.get("圖片") and item.get("名稱"):
+                    column = {
+                        "image_url": item["圖片"],
+                        "action": {
+                            "type": "message",
+                            "label": item["名稱"],
+                            "text": item["名稱"]
+                        }
+                    }
+                    image_columns.append(column)
 
-            columns = []
-            for item in matched[:10]:  # 最多10筆
-                columns.append(
-                    ImageCarouselColumn(
-                        image_url=item["圖片"],
-                        action=MessageAction(
-                            label=item["名稱"],
-                            text=item["名稱"]
-                        )
-                    )
-                )
+            image_carousel = {
+                "type": "template",
+                "altText": "上課教室列表",
+                "template": {
+                    "type": "image_carousel",
+                    "columns": image_columns
+                }
+            }
 
-            carousel = TemplateSendMessage(
-                alt_text="上課教室列表",
-                template=ImageCarouselTemplate(columns=columns)
+            line_bot_api.reply_message(
+                event.reply_token,
+                FlexSendMessage(alt_text="上課教室", contents=image_carousel["template"])
             )
-            line_bot_api.reply_message(event.reply_token, carousel)
 
         except Exception as e:
-            logger.error(f"查詢上課教室錯誤：{e}", exc_info=True)
+            logger.error(f"上課教室查詢錯誤：{e}", exc_info=True)
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 查詢失敗，請稍後再試。"))
+
 
 
 if __name__ == "__main__":
