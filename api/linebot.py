@@ -402,9 +402,10 @@ def handle_message(event):
             )
             line_bot_api.reply_message(event.reply_token, carousel)
     
+
         except Exception as e:
             logger.error(f"上課教室查詢失敗：{e}", exc_info=True)
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 無有效圖片可顯示"))
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"⚠ 發生錯誤：{e}"))
 
 
 if __name__ == "__main__":
