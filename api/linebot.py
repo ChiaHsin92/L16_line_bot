@@ -371,7 +371,6 @@ def handle_message(event):
         )
         line_bot_api.reply_message(event.reply_token, flex_message)
 
-
     elif user_msg == "上課教室":
         try:
             client = get_gspread_client()
@@ -406,17 +405,15 @@ def handle_message(event):
             logger.error(f"上課教室查詢失敗：{e}", exc_info=True)
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"⚠ 發生錯誤：{e}"))
 
-    # 使用者點圖片後回傳場地名稱
-    elif user_msg in [row.get("名稱") for row in records if "名稱" in row]:
+    else:
         try:
-            # 再次連線避免資料斷掉
             client = get_gspread_client()
             sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("場地資料")
             records = sheet.get_all_records()
 
             matched = next((row for row in records if row.get("名稱") == user_msg), None)
 
-            if matched:
+            if matched and matched.get("圖片1", "").startswith("https"):
                 bubble = {
                     "type": "bubble",
                     "hero": {
@@ -440,7 +437,7 @@ def handle_message(event):
                             },
                             {
                                 "type": "text",
-                                "text": matched["描述"],
+                                "text": matched.get("說明", "（尚無說明）"),
                                 "size": "sm",
                                 "wrap": True,
                                 "color": "#666666"
@@ -455,11 +452,12 @@ def handle_message(event):
                 )
                 line_bot_api.reply_message(event.reply_token, flex_msg)
             else:
-                line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 查無此場地資料"))
+                line_bot_api.reply_message(event.reply_token, TextSendMessage(text="❌ 查無該場地資料"))
 
         except Exception as e:
             logger.error(f"場地詳情查詢失敗：{e}", exc_info=True)
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"⚠ 查詢錯誤：{e}"))
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"⚠ 發生錯誤：{e}"))
+
 
 
 
