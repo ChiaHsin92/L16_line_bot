@@ -92,14 +92,15 @@ def handle_message(event):
             records = sheet.get_all_records()
     
             # 判斷輸入是編號還是姓名
-            if keyword.isdigit():
-                # 若輸入為數字，視為編號比對（只取數字比對）
+            if re.sub(r"\D", "", keyword) == keyword:
+                # 純數字 → 當成會員編號
+                clean_keyword = re.sub(r"\D", "", keyword)
                 member_data = next(
-                    (row for row in records if re.sub(r"\D", "", str(row["會員編號"])) == keyword),
+                    (row for row in records if re.sub(r"\D", "", str(row["會員編號"])) == clean_keyword),
                     None
                 )
             else:
-                # 否則視為姓名模糊比對
+                # 其他 → 當作姓名
                 member_data = next(
                     (row for row in records if keyword in row["姓名"]),
                     None
