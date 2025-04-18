@@ -542,16 +542,34 @@ def handle_message(event):
              line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"⚠ 發生錯誤：{e}"))
 
     elif user_msg == "課程教練":
-         try:
-             client = get_gspread_client()
-             sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("教練資料")
-             records = sheet.get_all_records()
- 
-             matched = [
-                 row for row in records
-                 if row.get("教練類型", "").strip() == "課程教練" and row.get("圖片", "").startswith("https")
-             ]
- 
+        # 顯示分類選單（按鈕）
+        subcategories = ["有氧教練", "瑜珈老師", "游泳教練"]
+        buttons = [
+            MessageAction(label=sub, text=sub)
+            for sub in subcategories[:4]  # 先顯示前4個
+        ]
+        # 第二個 bubble 可加更多分類
+        template = TemplateSendMessage(
+            alt_text="課程教練分類",
+            template=ButtonsTemplate(
+                title="課程教練分類",
+                text="請選擇課程教練",
+                actions=buttons
+            )
+        )
+        line_bot_api.reply_message(event.reply_token, template)
+        
+    elif user_msg in ["有氧教練", "瑜珈老師", "游泳教練"]:
+        try:
+            client = get_gspread_client()
+            sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("教練資料")
+            records = sheet.get_all_records()
+
+            matched = [
+                row for row in records
+                if row.get("教練類別", "").strip() == user_msg and row.get("圖片", "").startswith("https")
+            ]
+
              if not matched:
                  line_bot_api.reply_message(
                      event.reply_token, TextSendMessage(text="⚠ 查無『課程教練』的教練資料")
