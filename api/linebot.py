@@ -559,7 +559,7 @@ def handle_message(event):
         )
         line_bot_api.reply_message(event.reply_token, template)
         
-    elif user_msg == ["有氧教練", "瑜珈老師", "游泳教練"]:
+    elif user_msg in ["有氧教練", "瑜珈老師", "游泳教練"]:
          try:
              client = get_gspread_client()
              sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("教練資料")
