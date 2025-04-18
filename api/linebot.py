@@ -227,7 +227,7 @@ def handle_message(event):
                         },
                         "body": {
                             "type": "box",
-                            "layout": "horizontal",
+                            "layout": "vertical",
                             "contents": [
                                 {
                                     "type": "text",
@@ -246,7 +246,7 @@ def handle_message(event):
                         },
                         "footer": {
                             "type": "box",
-                            "layout": "vertical",
+                            "layout": "horizontal",
                             "spacing": "sm",
                             "contents": [
                                 {
@@ -343,7 +343,7 @@ def handle_message(event):
                         },
                         "footer": {
                             "type": "box",
-                            "layout": "vertical",
+                            "layout": "horizontal",
                             "spacing": "sm",
                             "contents": [
                                 {
