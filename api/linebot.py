@@ -359,8 +359,8 @@ def handle_message(event):
                                     "type": "button",
                                     "action": {
                                         "type": "message",
-                                        "label": "課程老師",
-                                        "text": "課程老師"
+                                        "label": "課程教練",
+                                        "text": "課程教練"
                                     }
                                 }
                             ]
