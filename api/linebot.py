@@ -422,21 +422,26 @@ def handle_message(event):
                 )
                 return
     
-            # 每 10 筆一組分段送出
-            for i in range(0, len(matched), 10):
-                chunk = matched[i:i + 10]
-                image_columns = [
-                    ImageCarouselColumn(
-                        image_url=row["圖片1"],
-                        action=MessageAction(label=row.get("名稱", "查看詳情"), text=row.get("名稱", "查看詳情"))
-                    ) for row in chunk
-                ]
-    
-                carousel = TemplateSendMessage(
-                    alt_text=f"健身/重訓器材列表 {i // 10 + 1}",
-                    template=ImageCarouselTemplate(columns=image_columns)
-                )
-                line_bot_api.reply_message(event.reply_token, carousel)
+                # 建立所有訊息物件
+                messages = []
+                for i in range(0, len(matched), 10):
+                    chunk = matched[i:i + 10]
+                    image_columns = [
+                        ImageCarouselColumn(
+                            image_url=row["圖片1"],
+                            action=MessageAction(label=row.get("名稱", "查看詳情"), text=row.get("名稱", "查看詳情"))
+                        ) for row in chunk
+                    ]
+                
+                    messages.append(
+                        TemplateSendMessage(
+                            alt_text=f"健身/重訓器材列表 {i // 10 + 1}",
+                            template=ImageCarouselTemplate(columns=image_columns)
+                        )
+                    )
+                
+                # 回傳所有訊息（最多 5 則）
+                line_bot_api.reply_message(event.reply_token, messages[:5])
     
         except Exception as e:
             logger.error(f"健身/重訓查詢失敗：{e}", exc_info=True)
