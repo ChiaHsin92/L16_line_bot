@@ -512,7 +512,7 @@ def handle_message(event):
             logger.error(f"場地詳情查詢失敗：{e}", exc_info=True)
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"⚠ 發生錯誤：{e}"))
             
-    elif user_msg == "健身教練":
+elif user_msg == "健身教練":
         try:
             client = get_gspread_client()
             sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("教練資料")
