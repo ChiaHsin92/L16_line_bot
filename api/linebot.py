@@ -567,12 +567,12 @@ def handle_message(event):
  
              matched = [
                  row for row in records
-                 if row.get("教練類型", "").strip() == user_msg and row.get("圖片", "").startswith("https")
+                 if row.get("教練類別", "").strip() == user_msg and row.get("圖片", "").startswith("https")
              ]
  
              if not matched:
                  line_bot_api.reply_message(
-                     event.reply_token, TextSendMessage(text="⚠ 查無『課程教練』的資料")
+                     event.reply_token, TextSendMessage(text="⚠ 查無『{user_msg}』的資料")
                  )
                  return
  
