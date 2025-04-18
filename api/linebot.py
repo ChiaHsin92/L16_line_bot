@@ -370,41 +370,6 @@ def handle_message(event):
             }
         )
         line_bot_api.reply_message(event.reply_token, flex_message)
-
-    elif user_msg == "上課教室":
-        try:
-            client = get_gspread_client()
-            sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("場地資料")
-            records = sheet.get_all_records()
-
-            matched = [
-                row for row in records
-                if row.get("類型", "").strip() == "上課教室" and row.get("圖片1", "").startswith("https")
-            ]
-
-            if not matched:
-                line_bot_api.reply_message(
-                    event.reply_token, TextSendMessage(text="⚠ 查無『上課教室』的場地資料")
-                )
-                return
-
-            image_columns = [
-                ImageCarouselColumn(
-                    image_url=row["圖片1"],
-                    action=MessageAction(label=row.get("名稱", "查看詳情"), text=row.get("名稱", "查看詳情"))
-                ) for row in matched
-            ]
-
-            carousel = TemplateSendMessage(
-                alt_text="上課教室場地列表",
-                template=ImageCarouselTemplate(columns=image_columns[:10])
-            )
-            line_bot_api.reply_message(event.reply_token, carousel)
-
-        except Exception as e:
-            logger.error(f"上課教室查詢失敗：{e}", exc_info=True)
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"⚠ 發生錯誤：{e}"))
-            
     elif user_msg == "健身/重訓":
         # 顯示分類選單（按鈕）
         subcategories = ["心肺訓練", "背部訓練", "腿部訓練", "自由重量器材"]
@@ -459,6 +424,42 @@ def handle_message(event):
         except Exception as e:
             logger.error(f"{user_msg} 分類查詢錯誤：{e}", exc_info=True)
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 發生錯誤，請稍後再試。"))
+            
+    elif user_msg == "上課教室":
+        try:
+            client = get_gspread_client()
+            sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("場地資料")
+            records = sheet.get_all_records()
+
+            matched = [
+                row for row in records
+                if row.get("類型", "").strip() == "上課教室" and row.get("圖片1", "").startswith("https")
+            ]
+
+            if not matched:
+                line_bot_api.reply_message(
+                    event.reply_token, TextSendMessage(text="⚠ 查無『上課教室』的場地資料")
+                )
+                return
+
+            image_columns = [
+                ImageCarouselColumn(
+                    image_url=row["圖片1"],
+                    action=MessageAction(label=row.get("名稱", "查看詳情"), text=row.get("名稱", "查看詳情"))
+                ) for row in matched
+            ]
+
+            carousel = TemplateSendMessage(
+                alt_text="上課教室場地列表",
+                template=ImageCarouselTemplate(columns=image_columns[:10])
+            )
+            line_bot_api.reply_message(event.reply_token, carousel)
+
+        except Exception as e:
+            logger.error(f"上課教室查詢失敗：{e}", exc_info=True)
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"⚠ 發生錯誤：{e}"))
+            
+
 
     else:
         try:
