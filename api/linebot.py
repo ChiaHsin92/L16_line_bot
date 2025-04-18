@@ -493,7 +493,7 @@ def handle_message(event):
                                 },
                                 {
                                     "type": "text",
-                                    "text": matched.get("說明", "（尚無說明）"),
+                                    "text": matched.get("描述", "（尚無說明）"),
                                     "size": "sm",
                                     "wrap": True,
                                     "color": "#666666"
