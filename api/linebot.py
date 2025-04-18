@@ -473,7 +473,7 @@ def handle_message(event):
  
              if not matched:
                  line_bot_api.reply_message(
-                     event.reply_token, TextSendMessage(text="⚠ 查無『健身教練』的教練資料")
+                     event.reply_token, TextSendMessage(text="⚠ 查無『健身教練』的資料")
                  )
                  return
  
@@ -559,22 +559,22 @@ def handle_message(event):
         )
         line_bot_api.reply_message(event.reply_token, template)
         
-    elif user_msg in ["有氧教練", "瑜珈老師", "游泳教練"]:
-        try:
-            client = get_gspread_client()
-            sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("教練資料")
-            records = sheet.get_all_records()
-
-            matched = [
-                row for row in records
-                if row.get("教練類別", "").strip() == user_msg and row.get("圖片", "").startswith("https")
-            ]
-            
-            if not matched:
-                line_bot_api.reply_message(
-                    event.reply_token, TextSendMessage(text="⚠ 查無『課程教練』的教練資料")
-                )
-                return
+    elif user_msg == ["有氧教練", "瑜珈老師", "游泳教練"]:
+         try:
+             client = get_gspread_client()
+             sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("教練資料")
+             records = sheet.get_all_records()
+ 
+             matched = [
+                 row for row in records
+                 if row.get("教練類型", "").strip() == user_msg and row.get("圖片", "").startswith("https")
+             ]
+ 
+             if not matched:
+                 line_bot_api.reply_message(
+                     event.reply_token, TextSendMessage(text="⚠ 查無『課程教練』的資料")
+                 )
+                 return
  
              bubbles = []
              for row in matched:
