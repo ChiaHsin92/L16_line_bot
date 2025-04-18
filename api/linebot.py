@@ -227,7 +227,7 @@ def handle_message(event):
                         },
                         "body": {
                             "type": "box",
-                            "layout": "vertical",
+                            "layout": "horizontal",
                             "contents": [
                                 {
                                     "type": "text",
