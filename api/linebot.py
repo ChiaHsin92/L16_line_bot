@@ -370,6 +370,7 @@ def handle_message(event):
             }
         )
         line_bot_api.reply_message(event.reply_token, flex_message)
+        
     elif user_msg == "健身/重訓":
         # 顯示分類選單（按鈕）
         subcategories = ["心肺訓練", "背部訓練", "腿部訓練", "自由重量器材"]
@@ -494,7 +495,7 @@ def handle_message(event):
                         "contents": [
                             {
                                 "type": "text",
-                                "text": f"{row['姓名']}（{row['教練類型']}）",
+                                "text": f"{row['姓名']}（{row['教練類別']}）",
                                 "weight": "bold",
                                 "size": "lg",
                                 "wrap": True
@@ -586,13 +587,6 @@ def handle_message(event):
                     contents=bubble
                 )
                 line_bot_api.reply_message(event.reply_token, flex_msg)
-            else:
-                line_bot_api.reply_message(event.reply_token, TextSendMessage(text="❌ 查無該場地資料"))
-
-        except Exception as e:
-            logger.error(f"場地詳情查詢失敗：{e}", exc_info=True)
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"⚠ 發生錯誤：{e}"))
-            
 
 
 if __name__ == "__main__":
