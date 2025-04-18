@@ -407,23 +407,23 @@ def handle_message(event):
             
     elif user_msg == "健身/重訓":
         # 顯示分類選單（按鈕）
-        subcategories = ["心肺訓練", "背部訓練", "肩部訓練", "腿部訓練", "自由重量器材"]
+        subcategories = ["心肺訓練", "背部訓練", "腿部訓練", "自由重量器材"]
         buttons = [
             MessageAction(label=sub, text=sub)
             for sub in subcategories[:4]  # 先顯示前4個
         ]
         # 第二個 bubble 可加更多分類
         template = TemplateSendMessage(
-            alt_text="健身/重訓 分類",
+            alt_text="健身/重訓 器材分類",
             template=ButtonsTemplate(
-                title="健身/重訓 分類",
-                text="請選擇訓練分類",
+                title="健身/重訓 器材分類",
+                text="請選擇器材分類",
                 actions=buttons
             )
         )
         line_bot_api.reply_message(event.reply_token, template)
         
-    elif user_msg in ["心肺訓練", "背部訓練", "肩部訓練", "腿部訓練", "自由重量器材"]:
+    elif user_msg in ["心肺訓練", "背部訓練", "腿部訓練", "自由重量器材"]:
         try:
             client = get_gspread_client()
             sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("場地資料")
