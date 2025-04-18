@@ -461,138 +461,138 @@ def handle_message(event):
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"⚠ 發生錯誤：{e}"))
             
     elif user_msg == "健身教練":
-        try:
-            client = get_gspread_client()
-            sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("教練資料")
-            records = sheet.get_all_records()
-
-            matched = [
-                row for row in records
-                if row.get("教練類型", "").strip() == "健身教練" and row.get("圖片", "").startswith("https")
-            ]
-
-            if not matched:
-                line_bot_api.reply_message(
-                    event.reply_token, TextSendMessage(text="⚠ 查無『健身教練』的教練資料")
-                )
-                return
-
-            bubbles = []
-            for row in matched:
-                bubble = {
-                    "type": "bubble",
-                    "hero": {
-                        "type": "image",
-                        "url": row["圖片"],
-                        "size": "full",
-                        "aspectRatio": "20:13",
-                        "aspectMode": "cover"
-                    },
-                    "body": {
-                        "type": "box",
-                        "layout": "vertical",
-                        "spacing": "sm",
-                        "contents": [
-                            {
-                                "type": "text",
-                                "text": f"{row['姓名']}（{row['教練類別']}）",
-                                "weight": "bold",
-                                "size": "lg",
-                                "wrap": True
-                            },
-                            {
-                                "type": "text",
-                                "text": f"專長：{row.get('專長', '未提供')}",
-                                "size": "sm",
-                                "wrap": True,
-                                "color": "#666666"
-                            }
-                        ]
-                    },
-                    "footer": {
-                        "type": "box",
-                        "layout": "vertical",
-                        "spacing": "sm",
-                        "contents": [
-                            {
-                                "type": "button",
-                                "style": "primary",
-                                "action": {
-                                    "type": "message",
-                                    "label": "立即預約",
-                                    "text": f"我要預約 {row['姓名']}"
-                                }
-                            }
-                        ]
-                    }
-                }
-                bubbles.append(bubble)
-
-            flex_message = FlexSendMessage(
-                alt_text="健身教練清單",
-                contents={
-                    "type": "carousel",
-                    "contents": bubbles[:10]
-                }
-            )
-            line_bot_api.reply_message(event.reply_token, flex_message)
-
-        except Exception as e:
-            logger.error(f"健身教練查詢失敗：{e}", exc_info=True)
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"⚠ 發生錯誤：{e}"))
-
-    else:
-             try:
-                 client = get_gspread_client()
-                 sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("場地資料")
-                 records = sheet.get_all_records()
-     
-                 matched = next((row for row in records if row.get("名稱") == user_msg), None)
-     
-                 if matched and matched.get("圖片1", "").startswith("https"):
-                     bubble = {
-                         "type": "bubble",
-                         "hero": {
-                             "type": "image",
-                             "url": matched["圖片1"],
-                             "size": "full",
-                             "aspectRatio": "20:13",
-                             "aspectMode": "cover"
-                         },
-                         "body": {
-                             "type": "box",
-                             "layout": "vertical",
-                             "spacing": "sm",
-                             "contents": [
-                                 {
-                                     "type": "text",
-                                     "text": matched["名稱"],
-                                     "weight": "bold",
-                                     "size": "xl",
-                                     "wrap": True
-                                 },
-                                 {
-                                     "type": "text",
-                                     "text": matched["描述"],
-                                     "size": "sm",
-                                     "wrap": True,
-                                     "color": "#666666"
+         try:
+             client = get_gspread_client()
+             sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("教練資料")
+             records = sheet.get_all_records()
+ 
+             matched = [
+                 row for row in records
+                 if row.get("教練類型", "").strip() == "健身教練" and row.get("圖片", "").startswith("https")
+             ]
+ 
+             if not matched:
+                 line_bot_api.reply_message(
+                     event.reply_token, TextSendMessage(text="⚠ 查無『健身教練』的教練資料")
+                 )
+                 return
+ 
+             bubbles = []
+             for row in matched:
+                 bubble = {
+                     "type": "bubble",
+                     "hero": {
+                         "type": "image",
+                         "url": row["圖片"],
+                         "size": "full",
+                         "aspectRatio": "20:13",
+                         "aspectMode": "cover"
+                     },
+                     "body": {
+                         "type": "box",
+                         "layout": "vertical",
+                         "spacing": "sm",
+                         "contents": [
+                             {
+                                 "type": "text",
+                                 "text": f"{row['姓名']}（{row['教練類型']}）",
+                                 "weight": "bold",
+                                 "size": "lg",
+                                 "wrap": True
+                             },
+                             {
+                                 "type": "text",
+                                 "text": f"專長：{row.get('專長', '未提供')}",
+                                 "size": "sm",
+                                 "wrap": True,
+                                 "color": "#666666"
+                             }
+                         ]
+                     },
+                     "footer": {
+                         "type": "box",
+                         "layout": "vertical",
+                         "spacing": "sm",
+                         "contents": [
+                             {
+                                 "type": "button",
+                                 "style": "primary",
+                                 "action": {
+                                     "type": "message",
+                                     "label": "立即預約",
+                                     "text": f"我要預約 {row['姓名']}"
                                  }
-                             ]
-                         }
+                             }
+                         ]
                      }
-     
-                     flex_msg = FlexSendMessage(
-                         alt_text=f"{matched['名稱']} 詳細資訊",
-                         contents=bubble
-                     )
-                     line_bot_api.reply_message(event.reply_token, flex_msg)
-                 else:
-                     line_bot_api.reply_message(event.reply_token, TextSendMessage(text="❌ 查無該場地資料"))
-     
-             except Exception as e:
-                 logger.error(f"場地詳情查詢失敗：{e}", exc_info=True)
-                 line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"⚠ 發生錯誤：{e}"))
+                 }
+                 bubbles.append(bubble)
+ 
+             flex_message = FlexSendMessage(
+                 alt_text="健身教練清單",
+                 contents={
+                     "type": "carousel",
+                     "contents": bubbles[:10]
+                 }
+             )
+             line_bot_api.reply_message(event.reply_token, flex_message)
+ 
+         except Exception as e:
+             logger.error(f"健身教練查詢失敗：{e}", exc_info=True)
+             line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"⚠ 發生錯誤：{e}"))
+             
+     else:
+         try:
+             client = get_gspread_client()
+             sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("場地資料")
+             records = sheet.get_all_records()
+ 
+             matched = next((row for row in records if row.get("名稱") == user_msg), None)
+ 
+             if matched and matched.get("圖片1", "").startswith("https"):
+                 bubble = {
+                     "type": "bubble",
+                     "hero": {
+                         "type": "image",
+                         "url": matched["圖片1"],
+                         "size": "full",
+                         "aspectRatio": "20:13",
+                         "aspectMode": "cover"
+                     },
+                     "body": {
+                         "type": "box",
+                         "layout": "vertical",
+                         "spacing": "sm",
+                         "contents": [
+                             {
+                                 "type": "text",
+                                 "text": matched["名稱"],
+                                 "weight": "bold",
+                                 "size": "xl",
+                                 "wrap": True
+                             },
+                             {
+                                 "type": "text",
+                                 "text": matched["描述"],
+                                 "size": "sm",
+                                 "wrap": True,
+                                 "color": "#666666"
+                             }
+                         ]
+                     }
+                 }
+ 
+                 flex_msg = FlexSendMessage(
+                     alt_text=f"{matched['名稱']} 詳細資訊",
+                     contents=bubble
+                 )
+                 line_bot_api.reply_message(event.reply_token, flex_msg)
+             else:
+                 line_bot_api.reply_message(event.reply_token, TextSendMessage(text="❌ 查無該場地資料"))
+ 
+         except Exception as e:
+             logger.error(f"場地詳情查詢失敗：{e}", exc_info=True)
+             line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"⚠ 發生錯誤：{e}"))
              
  
  
