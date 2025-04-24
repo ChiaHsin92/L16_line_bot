@@ -738,12 +738,6 @@ def handle_message(event):
         )
 
     else:
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text="請輸入『課程內容』來查詢課程分類")
-        )
-
-    else:
         try:
             client = get_gspread_client()
             sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("場地資料")
