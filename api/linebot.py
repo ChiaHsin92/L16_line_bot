@@ -773,7 +773,7 @@ def handle_message(event):
                             {"type": "text", "text": row.get("課程名稱", "（未提供課程名稱）"), "weight": "bold", "size": "lg", "wrap": True},
                             {"type": "text", "text": f"👨‍🏫 教練：{row.get('教練姓名', '未知')}", "size": "sm", "wrap": True},
                             {"type": "text", "text": f"🕒 上課時間：{row.get('上課時間', '未提供')}", "size": "sm"},
-                            {"type": "text", "text": f"⏱️ 時長：{row.get('時長', '未提供')}", "size": "sm"},
+                            {"type": "text", "text": f"⏱️ 時間：{row.get('時間', '未提供')}分鐘", "size": "sm"},
                             {"type": "text", "text": f"💲 價格：{row.get('課程價格', '未定')}", "size": "sm"}
                         ]
                     }
