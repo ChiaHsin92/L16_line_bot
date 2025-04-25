@@ -708,7 +708,7 @@ def handle_message(event):
     elif user_msg in types:  # types 是你先前取得的課程類型清單
         try:
             client = get_gspread_client()
-            sheet = client.open_by_key("你的試算表ID").worksheet("課程資料")
+            sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("課程資料")
             records = sheet.get_all_records()
 
             matched = [
@@ -785,7 +785,7 @@ def handle_message(event):
     elif re.match(r"^\d{4}/\d{2}/\d{2}$", user_msg):
         try:
             client = get_gspread_client()
-            sheet = client.open_by_key("你的試算表ID").worksheet("課程資料")
+            sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("課程資料")
             records = sheet.get_all_records()
 
             matched = [
