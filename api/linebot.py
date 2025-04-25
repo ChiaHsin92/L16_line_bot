@@ -743,10 +743,13 @@ def handle_message(event):
                     contents={"type": "carousel", "contents": bubbles}
                 )
             )
-
+            
         except Exception as e:
             logger.error(f"課程類型查詢錯誤：{e}", exc_info=True)
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 無法查詢課程內容"))
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text=f"⚠ 無法查詢課程內容（錯誤訊息：{str(e)}）")
+            )
 
     elif re.match(r"^\d{4}[-/]\d{2}[-/]\d{2}$", user_msg):
         query_date = user_msg.replace("/", "-").strip()
@@ -786,10 +789,13 @@ def handle_message(event):
                     contents={"type": "carousel", "contents": bubbles}
                 )
             )
-
-        except Exception as e:
-            logger.error(f"課程日期查詢錯誤：{e}", exc_info=True)
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 無法查詢課程資訊"))
+            
+       except Exception as e:
+            logger.error(f"課程日期查詢錯誤：{e}", exc_info=True
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text=f"⚠ 無法查詢課程內容（錯誤訊息：{str(e)}）")
+            )
 
 
     
