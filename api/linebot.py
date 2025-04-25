@@ -643,7 +643,7 @@ def handle_message(event):
     elif user_msg == "課程內容":
         try:
             client = get_gspread_client()
-            sheet = client.open_by_key("你的試算表ID").worksheet("課程資料")
+            sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("課程資料")
             records = sheet.get_all_records()
     
             # 取得所有課程類型，並去除重複
