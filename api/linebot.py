@@ -725,13 +725,12 @@ def handle_message(event):
                         "layout": "vertical",
                         "spacing": "sm",
                         "contents": [
-                            {"type": "text", "text": row["課程名稱"], "weight": "bold", "size": "lg", "wrap": True},
-                            {"type": "text", "text": f"👨‍🏫 教練：{row['教練姓名']}", "size": "sm", "wrap": True},
-                            {"type": "text", "text": f"📅 開始日期：{row['開始日期']}", "size": "sm"},
-                            {"type": "text", "text": f"🕒 上課時間：{row['上課時間']}", "size": "sm"},
-                            {"type": "text", "text": f"📅 結束日期：{row['結束日期']}", "size": "sm"},
-                            {"type": "text", "text": f"⏱️ 時長：{row['時長']}", "size": "sm"},
-                            {"type": "text", "text": f"💲 價格：{row['課程價格']}", "size": "sm"}
+                            {"type": "text", "text": row.get("課程名稱", "（未提供課程名稱）"), "weight": "bold", "size": "lg", "wrap": True},
+                            {"type": "text", "text": f"👨‍🏫 教練：{row.get('教練姓名', '未知')}", "size": "sm", "wrap": True},
+                            {"type": "text", "text": f"📅 開課日期：{row.get('開始日期', '未提供')}", "size": "sm"},
+                            {"type": "text", "text": f"🕒 上課時間：{row.get('上課時間', '未提供')}", "size": "sm"},
+                            {"type": "text", "text": f"⏱️ 時間：{row.get('時間', '未提供')}分鐘", "size": "sm"},
+                            {"type": "text", "text": f"💲 價格：{row.get('課程價格', '未定')}", "size": "sm"}
                         ]
                     }
                 })
@@ -746,7 +745,10 @@ def handle_message(event):
 
         except Exception as e:
             logger.error(f"課程類型查詢錯誤：{e}", exc_info=True)
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 無法查詢課程內容"))
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text=f"⚠ 無法查詢課程內容（錯誤：{str(e)}）")
+            )
 
     elif re.match(r"^\d{4}[-/]\d{2}[-/]\d{2}$", user_msg):
         query_date = user_msg.replace("/", "-").strip()
@@ -772,6 +774,7 @@ def handle_message(event):
                         "contents": [
                             {"type": "text", "text": row.get("課程名稱", "（未提供課程名稱）"), "weight": "bold", "size": "lg", "wrap": True},
                             {"type": "text", "text": f"👨‍🏫 教練：{row.get('教練姓名', '未知')}", "size": "sm", "wrap": True},
+                            {"type": "text", "text": f"📅 開課日期：{row.get('開始日期', '未提供')}", "size": "sm"},
                             {"type": "text", "text": f"🕒 上課時間：{row.get('上課時間', '未提供')}", "size": "sm"},
                             {"type": "text", "text": f"⏱️ 時間：{row.get('時間', '未提供')}分鐘", "size": "sm"},
                             {"type": "text", "text": f"💲 價格：{row.get('課程價格', '未定')}", "size": "sm"}
