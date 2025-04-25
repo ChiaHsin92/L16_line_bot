@@ -696,7 +696,7 @@ def handle_message(event):
                 event.reply_token,
                 [
                     flex_msg,
-                    TextSendMessage(text="📅 你也可以輸入日期（例如：2025-05-01）查詢當天課程。")
+                    TextSendMessage(text="📅 你也可以輸入日期（例如：2025-05-01）查詢當天開課課程。")
                 ]
             )
 
@@ -729,7 +729,7 @@ def handle_message(event):
                             {"type": "text", "text": f"👨‍🏫 教練：{row.get('教練姓名', '未知')}", "size": "sm", "wrap": True},
                             {"type": "text", "text": f"📅 開課日期：{row.get('開始日期', '未提供')}", "size": "sm"},
                             {"type": "text", "text": f"🕒 上課時間：{row.get('上課時間', '未提供')}", "size": "sm"},
-                            {"type": "text", "text": f"⏱️ 時間：{row.get('時間', '未提供')}分鐘", "size": "sm"},
+                            {"type": "text", "text": f"⏱️ 時間：{row.get('時間', '未提供')}", "size": "sm"},
                             {"type": "text", "text": f"💲 價格：{row.get('課程價格', '未定')}", "size": "sm"}
                         ]
                     }
@@ -776,7 +776,7 @@ def handle_message(event):
                             {"type": "text", "text": f"👨‍🏫 教練：{row.get('教練姓名', '未知')}", "size": "sm", "wrap": True},
                             {"type": "text", "text": f"📅 開課日期：{row.get('開始日期', '未提供')}", "size": "sm"},
                             {"type": "text", "text": f"🕒 上課時間：{row.get('上課時間', '未提供')}", "size": "sm"},
-                            {"type": "text", "text": f"⏱️ 時間：{row.get('時間', '未提供')}分鐘", "size": "sm"},
+                            {"type": "text", "text": f"⏱️ 時間：{row.get('時間', '未提供')}", "size": "sm"},
                             {"type": "text", "text": f"💲 價格：{row.get('課程價格', '未定')}", "size": "sm"}
                         ]
                     }
