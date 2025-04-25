@@ -641,106 +641,70 @@ def handle_message(event):
              line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"⚠ 發生錯誤：{e}"))
             
     elif user_msg == "課程內容":
-    flex_message = {
-        "type": "bubble",
-        "body": {
-            "type": "box",
-            "layout": "vertical",
-            "contents": [
+        try:
+            client = get_gspread_client()
+            sheet = client.open_by_key("你的試算表ID").worksheet("課程資料")
+            records = sheet.get_all_records()
+    
+            # 取得所有課程類型，並去除重複
+            types = list({row.get("課程類型", "").strip() for row in records if row.get("課程類型")})
+            types = [t for t in types if t]  # 過濾空值
+    
+            # 每個課程類型做一個 button
+            buttons = [
                 {
-                    "type": "text",
-                    "text": "課程內容",
-                    "weight": "bold",
-                    "size": "lg",
-                    "margin": "md"
-                },
-                {
+                    "type": "button",
+                    "style": "secondary",
+                    "action": {
+                        "type": "message",
+                        "label": t,
+                        "text": t
+                    }
+                } for t in types[:6]  # 最多 6 個課程類型
+            ]
+    
+            bubble = {
+                "type": "bubble",
+                "body": {
                     "type": "box",
                     "layout": "vertical",
-                    "margin": "lg",
-                    "spacing": "sm",
                     "contents": [
                         {
-                            "type": "button",
-                            "style": "primary",
-                            "color": "#A8E62F",
-                            "action": {
-                                "type": "message",
-                                "label": "有氧課程",
-                                "text": "我想查詢有氧課程"
-                            }
+                            "type": "text",
+                            "text": "📚 課程內容查詢",
+                            "weight": "bold",
+                            "size": "lg",
+                            "margin": "md"
                         },
                         {
-                            "type": "button",
-                            "style": "primary",
-                            "color": "#A8E62F",
-                            "action": {
-                                "type": "message",
-                                "label": "瑜珈課程",
-                                "text": "我想查詢瑜珈課程"
-                            }
-                        },
-                        {
-                            "type": "button",
-                            "style": "primary",
-                            "color": "#A8E62F",
-                            "action": {
-                                "type": "message",
-                                "label": "游泳課程",
-                                "text": "我想查詢游泳課程"
-                            }
-                        },
-                        {
-                            "type": "button",
-                            "style": "primary",
-                            "color": "#A8E62F",
-                            "action": {
-                                "type": "message",
-                                "label": "OO課程1",
-                                "text": "我想查詢OO課程1"
-                            }
-                        },
-                        {
-                            "type": "button",
-                            "style": "primary",
-                            "color": "#A8E62F",
-                            "action": {
-                                "type": "message",
-                                "label": "OO課程2",
-                                "text": "我想查詢OO課程2"
-                            }
-                        },
-                        {
-                            "type": "button",
-                            "style": "primary",
-                            "color": "#A8E62F",
-                            "action": {
-                                "type": "message",
-                                "label": "OO課程3",
-                                "text": "我想查詢OO課程3"
-                            }
+                            "type": "box",
+                            "layout": "vertical",
+                            "spacing": "sm",
+                            "margin": "lg",
+                            "contents": buttons
                         }
                     ]
-                },
-                {
-                    "type": "text",
-                    "text": "輸入日期也可查詢\nex: 114/01/01",
-                    "margin": "md",
-                    "size": "sm",
-                    "color": "#666666"
                 }
-            ]
-        }
-    }
+            }
+    
+            flex_msg = FlexSendMessage(
+                alt_text="課程類型查詢",
+                contents=bubble
+            )
+    
+            # 一起送出 Flex Message 與文字提示
+            line_bot_api.reply_message(
+                event.reply_token,
+                [
+                    flex_msg,
+                    TextSendMessage(text="📅 你也可以輸入日期（例如：2025-05-01）查詢當天課程。")
+                ]
+            )
+    
+        except Exception as e:
+            logger.error(f"課程內容查詢錯誤：{e}", exc_info=True)
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 無法讀取課程資料，請稍後再試。"))
 
-    from linebot.models import FlexSendMessage, BubbleContainer
-
-    message = FlexSendMessage(
-        alt_text="課程內容",
-        contents=BubbleContainer.new_from_json_dict(flex_message)
-    )
-
-    line_bot_api.reply_message(event.reply_token, message)
     
     else:
         try:
