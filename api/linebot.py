@@ -704,7 +704,7 @@ def handle_message(event):
             logger.error(f"課程內容查詢錯誤：{e}", exc_info=True)
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 無法讀取課程資料"))
 
-    elif user_msg in course_types:
+    elif user_msg in ["有氧課程", "瑜珈課程", "游泳課程"]:
         try:
             client = get_gspread_client()
             sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("課程資料")
