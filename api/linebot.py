@@ -797,6 +797,40 @@ def handle_message(event):
                 TextSendMessage(text=f"⚠ 無法查詢課程內容（錯誤訊息：{str(e)}）")
             )
 
+    elif user_msg == "健身紀錄":
+        liff_url = "https://liffweb.vercel.app/"  # 這是新專案上線的網址
+        flex_message = FlexSendMessage(
+            alt_text="健身紀錄",
+            contents={
+                "type": "bubble",
+                "hero": {
+                    "type": "image",
+                    "url": "https://i.imgur.com/XtTq7Gp.png",  # 任意好看的圖片
+                    "size": "full",
+                    "aspectRatio": "20:13",
+                    "aspectMode": "cover",
+                    "action": {
+                        "type": "uri",
+                        "uri": liff_url
+                    }
+                },
+                "body": {
+                    "type": "box",
+                    "layout": "vertical",
+                    "contents": [
+                        {
+                            "type": "text",
+                            "text": "點擊開始記錄今日健身！",
+                            "weight": "bold",
+                            "size": "xl",
+                            "wrap": True
+                        }
+                    ]
+                }
+            }
+        )
+        line_bot_api.reply_message(event.reply_token, flex_message
+
     
     else:
         try:
