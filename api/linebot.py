@@ -805,7 +805,7 @@ def handle_message(event):
                 "type": "bubble",
                 "hero": {
                     "type": "image",
-                    "url": "https://i.imgur.com/XtTq7Gp.png",  # 任意好看的圖片
+                    "url": "https://example.com/your_new_image.jpg",  # 替換成您的新圖片網址
                     "size": "full",
                     "aspectRatio": "20:13",
                     "aspectMode": "cover",
@@ -819,11 +819,14 @@ def handle_message(event):
                     "layout": "vertical",
                     "contents": [
                         {
-                            "type": "text",
-                            "text": "點擊開始記錄今日健身！",
-                            "weight": "bold",
-                            "size": "xl",
-                            "wrap": True
+                            "type": "button",
+                            "style": "primary",
+                            "height": "md",
+                            "action": {
+                                "type": "uri",
+                                "label": "開始記錄今日健身！",
+                                "uri": liff_url
+                            }
                         }
                     ]
                 }
