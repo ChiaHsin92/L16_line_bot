@@ -797,6 +797,7 @@ def handle_message(event):
                 TextSendMessage(text=f"⚠ 無法查詢課程內容（錯誤訊息：{str(e)}）")
             )
         
+
     elif user_msg == "健身紀錄":
         liff_url = "https://liff.line.me/2007341042-bzeprj3R"  # 這是新專案上線的網址
         flex_message = FlexSendMessage(
@@ -834,61 +835,60 @@ def handle_message(event):
         )
         line_bot_api.reply_message(event.reply_token, flex_message)
 
-
         try:
             client = get_gspread_client()
             sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("場地資料")
             records = sheet.get_all_records()
-        
+
             matched = next((row for row in records if row.get("名稱") == user_msg), None)
-        
+
             if matched:
                 if matched.get("圖片1", "").startswith("https"):
                     bubble = {
-                             "type": "bubble",
-                             "hero": {
-                                 "type": "image",
-                                 "url": matched["圖片1"],
-                                 "size": "full",
-                                 "aspectRatio": "20:13",
-                                 "aspectMode": "cover"
-                             },
-                             "body": {
-                                 "type": "box",
-                                 "layout": "vertical",
-                                 "spacing": "sm",
-                                 "contents": [
-                                     {
-                                         "type": "text",
-                                         "text": matched["名稱"],
-                                         "weight": "bold",
-                                         "size": "xl",
-                                         "wrap": True
-                                     },
-                                     {
-                                         "type": "text",
-                                         "text": matched["描述"],
-                                         "size": "sm",
-                                         "wrap": True,
-                                         "color": "#666666"
-                                     }
-                                 ]
-                             }
-                         }
-        
-                         flex_msg = FlexSendMessage(
-                             alt_text=f"{matched['名稱']} 詳細資訊",
-                             contents=bubble
-                         )
-                         line_bot_api.reply_message(event.reply_token, flex_msg)
-                     else:
-                         line_bot_api.reply_message(event.reply_token, TextSendMessage(text="這個場地沒有圖片資訊。"))
-                 else:
-                     line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"找不到名為 '{user_msg}' 的場地。"))
-        
-             except Exception as e:
-                 logger.error(f"場地詳情查詢失敗：{e}", exc_info=True)
-                 line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"⚠ 發生錯誤：{e}"))
-                    
+                        "type": "bubble",
+                        "hero": {
+                            "type": "image",
+                            "url": matched["圖片1"],
+                            "size": "full",
+                            "aspectRatio": "20:13",
+                            "aspectMode": "cover"
+                        },
+                        "body": {
+                            "type": "box",
+                            "layout": "vertical",
+                            "spacing": "sm",
+                            "contents": [
+                                {
+                                    "type": "text",
+                                    "text": matched["名稱"],
+                                    "weight": "bold",
+                                    "size": "xl",
+                                    "wrap": True
+                                },
+                                {
+                                    "type": "text",
+                                    "text": matched["描述"],
+                                    "size": "sm",
+                                    "wrap": True,
+                                    "color": "#666666"
+                                }
+                            ]
+                        }
+                    }
+
+                    flex_msg = FlexSendMessage(
+                        alt_text=f"{matched['名稱']} 詳細資訊",
+                        contents=bubble
+                    )
+                    line_bot_api.reply_message(event.reply_token, flex_msg)
+                else:
+                    line_bot_api.reply_message(event.reply_token, TextSendMessage(text="這個場地沒有圖片資訊。"))
+            else:
+                line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"找不到名為 '{user_msg}' 的場地。"))
+
+        except Exception as e:
+            logger.error(f"場地詳情查詢失敗：{e}", exc_info=True)
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"⚠ 發生錯誤：{e}"))
+
 if __name__ == "__main__":
     app.run()
