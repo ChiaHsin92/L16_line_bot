@@ -796,29 +796,6 @@ def handle_message(event):
                 event.reply_token,
                 TextSendMessage(text=f"⚠ 無法查詢課程內容（錯誤訊息：{str(e)}）")
             )
-            
-@line_handler.add(MessageEvent, message=TextMessage)
-def handle_liff_message(event):
-    user_msg = event.message.text.strip()
-
-    if "💪 最新健身紀錄 💪" in user_msg:
-        # 解析健身紀錄
-        records = {}
-        for line in user_msg.split('\n'):
-            if ":" in line:
-                key, value = line.split(":", 1)
-                records[key.strip()] = value.strip()
-
-        # 建構回覆訊息 (可以是文字或 Flex Message)
-        reply_text = (
-            f"收到您的健身紀錄：\n"
-            f"姓名：{records.get('姓名', '')}\n"
-            f"日期：{records.get('日期', '')}\n"
-            f"運動：{records.get('運動', '')}\n"
-            f"時長：{records.get('時長', '')} 分鐘\n"
-            f"備註：{records.get('備註', '')}"
-        )
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
         
     elif user_msg == "健身紀錄":
         liff_url = "https://liff.line.me/2007341042-bzeprj3R"  # 這是新專案上線的網址
