@@ -835,16 +835,16 @@ def handle_message(event):
         line_bot_api.reply_message(event.reply_token, flex_message)
 
 
-            try:
-                 client = get_gspread_client()
-                 sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("場地資料")
-                 records = sheet.get_all_records()
+        try:
+            client = get_gspread_client()
+            sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("場地資料")
+            records = sheet.get_all_records()
         
-                 matched = next((row for row in records if row.get("名稱") == user_msg), None)
+            matched = next((row for row in records if row.get("名稱") == user_msg), None)
         
-                 if matched:
-                     if matched.get("圖片1", "").startswith("https"):
-                         bubble = {
+            if matched:
+                if matched.get("圖片1", "").startswith("https"):
+                    bubble = {
                              "type": "bubble",
                              "hero": {
                                  "type": "image",
