@@ -898,7 +898,7 @@ def handle_message(event):
                 )
                 line_bot_api.reply_message(event.reply_token, flex_msg)
             else:
-                line_bot_api.reply_message(event.reply_token, TextSendMessage(text="❌ 查無該場地資料"))
+                line_bot_api.reply_message(event.reply_token, TextSendMessage())
  
         except Exception as e:
             logger.error(f"場地詳情查詢失敗：{e}", exc_info=True)
