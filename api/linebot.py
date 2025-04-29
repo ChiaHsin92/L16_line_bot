@@ -798,7 +798,7 @@ def handle_message(event):
             )
 
     elif user_msg == "健身紀錄":
-        liff_url = "https://liffweb.vercel.app/"  # 這是新專案上線的網址
+        liff_url = "https://liff.line.me/2007341042-bzeprj3R"  # 這是新專案上線的網址
         flex_message = FlexSendMessage(
             alt_text="健身紀錄",
             contents={
