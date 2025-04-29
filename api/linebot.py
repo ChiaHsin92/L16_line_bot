@@ -796,7 +796,8 @@ def handle_message(event):
                 event.reply_token,
                 TextSendMessage(text=f"⚠ 無法查詢課程內容（錯誤訊息：{str(e)}）")
             )
-    
+            
+@handler.add(MessageEvent, message=TextMessage)    
 def handle_message(event):
     user_msg = event.message.text.strip()
 
