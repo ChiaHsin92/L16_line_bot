@@ -835,7 +835,7 @@ def handle_message(event):
         )
         line_bot_api.reply_message(event.reply_token, flex_message)
         
-    elif any(row.get("名稱") == user_msg for row in records):
+    else:
          try:
              client = get_gspread_client()
              sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("場地資料")
