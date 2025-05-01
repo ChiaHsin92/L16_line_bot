@@ -520,7 +520,7 @@ def handle_message(event):
                                  "action": {
                                      "type": "message",
                                      "label": "立即預約",
-                                     "text": f"我要預約 {row['姓名']}"
+                                     "text": f"我要預約"
                                  }
                              }
                          ]
@@ -873,24 +873,27 @@ def handle_message(event):
                                 "color": "#666666"
                             }
                         ]
-                    },
-                    "footer": {
+                    }
+                }
+            
+                # 如果類型為「上課教室」，加上 footer 的立即預約按鈕
+                if matched.get("類型") == "上課教室":
+                    bubble["footer"] = {
                         "type": "box",
                         "layout": "vertical",
                         "spacing": "sm",
                         "contents": [
                             {
-                                 "type": "button",
-                                 "style": "primary",
-                                 "action": {
-                                     "type": "message",
-                                     "label": "立即預約",
-                                     "text": f"我要預約"
+                                "type": "button",
+                                "style": "primary",
+                                "action": {
+                                    "type": "message",
+                                    "label": "立即預約",
+                                    "text": "我要預約"
                                 }
                             }
                         ]
                     }
-                }
             
                 flex_msg = FlexSendMessage(
                     alt_text=f"{matched['名稱']} 詳細資訊",
