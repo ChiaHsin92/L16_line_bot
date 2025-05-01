@@ -619,7 +619,7 @@ def handle_message(event):
                                  "action": {
                                      "type": "message",
                                      "label": "立即預約",
-                                     "text": f"我要預約 {row['姓名']}"
+                                     "text": f"我要預約"
                                  }
                              }
                          ]
@@ -873,20 +873,39 @@ def handle_message(event):
                                 "color": "#666666"
                             }
                         ]
+                    },
+                    "footer": {
+                        "type": "box",
+                        "layout": "vertical",
+                        "spacing": "sm",
+                        "contents": [
+                            {
+                                 "type": "button",
+                                 "style": "primary",
+                                 "action": {
+                                     "type": "message",
+                                     "label": "立即預約",
+                                     "text": f"我要預約"
+                                }
+                            }
+                        ]
                     }
                 }
-
+            
                 flex_msg = FlexSendMessage(
                     alt_text=f"{matched['名稱']} 詳細資訊",
                     contents=bubble
                 )
                 line_bot_api.reply_message(event.reply_token, flex_msg)
+
             else:
                 line_bot_api.reply_message(event.reply_token, TextSendMessage())
 
         except Exception as e:
             logger.error(f"場地詳情查詢失敗：{e}", exc_info=True)
-            pass
-
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text=f"請重新查詢")
+            )
 if __name__ == "__main__":
     app.run()
