@@ -70,6 +70,7 @@ def handle_message(event):
                 text="請選擇功能",
                 actions=[
                     MessageAction(label="查詢會員資料", text="查詢會員資料"),
+                    MessageAction(label="健身紀錄", text="健身紀錄"),
                 ]
             )
         )
@@ -806,7 +807,7 @@ def handle_message(event):
                 "type": "bubble",
                 "hero": {
                     "type": "image",
-                    "url": "https://example.com/your_new_image.jpg",  # 替換成您的新圖片網址
+                    "url": "https://i.imgur.com/sevvXcU.jpeg",  # 替換成您的新圖片網址
                     "size": "full",
                     "aspectRatio": "20:13",
                     "aspectMode": "cover",
