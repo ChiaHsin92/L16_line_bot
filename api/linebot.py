@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 line_bot_api = LineBotApi(os.getenv("LINE_CHANNEL_ACCESS_TOKEN"))
 line_handler = WebhookHandler(os.getenv("LINE_CHANNEL_SECRET"))
 user_states = {}
+user_states2 = {}
 
 def get_gspread_client():
     credentials_content = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS_CONTENT")
@@ -864,15 +865,15 @@ def handle_message(event):
         line_bot_api.reply_message(event.reply_token, flex_message)
 
     elif user_msg == "查詢健身紀錄":  # 第一次查詢，要求輸入姓名
-        user_state[user_id] = "waiting_for_name"
+        user_state2[user_id] = "waiting_for_name"
         line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text="請輸入您的姓名以查詢健身紀錄：")
         )
 
-    elif user_state.get(user_id) == "waiting_for_name":  #  使用者輸入姓名後，進行查詢
+    elif user_state2.get(user_id) == "waiting_for_name":  #  使用者輸入姓名後，進行查詢
         name = user_msg.strip()
-        user_state.pop(user_id)  # 清除狀態
+        user_state2.pop(user_id)  # 清除狀態
 
         try:
             response = requests.get(
