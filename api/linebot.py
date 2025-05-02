@@ -813,10 +813,6 @@ def handle_message(event):
                             "size": "full",
                             "aspectRatio": "20:13",
                             "aspectMode": "cover"
-                            "action": {
-                            "type": "uri",
-                            "uri": liff_url
-                            }
                         },
                         "body": {
                             "type": "box",
@@ -855,8 +851,8 @@ def handle_message(event):
                                     "type": "button",
                                     "action": {
                                         "type": "message",
-                                        "label": "健身紀錄查詢",
-                                        "text": "健身紀錄查詢"
+                                        "label": "查詢健身紀錄",
+                                        "text": "查詢健身紀錄"
                                     }
                                 }
                             ]
