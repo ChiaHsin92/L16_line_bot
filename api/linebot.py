@@ -817,7 +817,7 @@ def handle_message(event):
                 },
                 "body": {
                     "type": "box",
-                    "layout": "horizontal",
+                    "layout": "vertical",  # 將 layout 改為 vertical
                     "contents": [
                         {
                             "type": "button",
@@ -835,8 +835,8 @@ def handle_message(event):
                             "height": "md",
                             "action": {
                                 "type": "message",
-                                "label": "查詢健身紀錄",
-                                "text": "查詢健身紀錄"
+                                "label": "健身紀錄查詢",
+                                "text": "健身紀錄查詢"
                             }
                         }
                     ]
