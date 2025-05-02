@@ -107,7 +107,7 @@ def handle_message(event):
                 reply_text = (
                     f"✅ 查詢成功\n"
                     f"👤 姓名：{member_data['姓名']}\n"
-                    f"📱 電話：{member_data['電話']}\n"
+                    f"📱 電話{member_data['電話']}\n"
                     f"🧾 會員類型：{member_data['會員類型']}\n"
                     f"📌 狀態：{member_data['會員狀態']}\n"
                     f"🎯 點數：{member_data['會員點數']}\n"
