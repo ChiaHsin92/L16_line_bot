@@ -865,7 +865,7 @@ def handle_message(event):
                 ]
             }
         )
-        line_bot_api.reply_message(event.reply_token, flex_message))
+        line_bot_api.reply_message(event.reply_token, flex_message)
 
     elif user_msg == "查詢健身紀錄":  # 第一次查詢，要求輸入姓名
         user_state[user_id] = "waiting_for_name"
