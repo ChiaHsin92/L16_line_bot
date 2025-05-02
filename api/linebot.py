@@ -863,17 +863,12 @@ def handle_message(event):
         )
         line_bot_api.reply_message(event.reply_token, flex_message)
 
-@handler.add(MessageEvent, message=TextMessage)
-def handle_message(event):
-    user_message = event.message.text.strip()
-
-    # 如果使用者輸入「查詢健身紀錄」
-    if user_message == "查詢健身紀錄":
+    elif user_msg == "查詢健身紀錄":  # 第一次查詢，要求輸入姓名
+        user_state[user_id] = "waiting_for_name"
         line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text="請輸入您的姓名以查詢健身紀錄：")
         )
-        return
 
     elif user_state.get(user_id) == "waiting_for_name":  #  使用者輸入姓名後，進行查詢
         name = user_msg.strip()
