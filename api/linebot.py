@@ -830,11 +830,54 @@ def handle_message(event):
                                 "uri": liff_url
                             }
                         }
+                        {
+                              "type": "button",
+                              "style": "secondary",
+                              "height": "md",
+                              "action": {
+                                "type": "message",
+                                "label": "健身紀錄查詢",
+                                "text": "健身紀錄查詢"
+                            }
                     ]
                 }
             }
         )
         line_bot_api.reply_message(event.reply_token, flex_message)
+
+    elif user_msg == "健身紀錄查詢":
+    user_state[user_id] = "waiting_for_name"
+    line_bot_api.reply_message(
+        event.reply_token,
+        TextSendMessage(text="請輸入您的姓名以查詢健身紀錄：")
+    )
+    
+    elif user_state.get(user_id) == "waiting_for_name":
+    name = user_msg.strip()
+    user_state.pop(user_id)  # 清除狀態
+
+    try:
+        response = requests.get(
+            "https://script.google.com/macros/s/AKfycbwzv98n99vi7YDUo3EXwsmvI-0sqAqPPcvKu-sz7cbgx_IFHf0kwn-mQK3xudBYlKzNRQ/exec",  # ✅ 換成你自己的網址
+            params={"name": name}
+        )
+        if response.status_code == 200:
+            img_url = response.text.strip()
+            if img_url.startswith("https://"):
+                image_msg = ImageSendMessage(
+                    original_content_url=img_url,
+                    preview_image_url=img_url
+                )
+                line_bot_api.reply_message(event.reply_token, image_msg)
+            else:
+                line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 查無健身紀錄或圖片載入失敗"))
+        else:
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 查詢失敗，請稍後再試"))
+
+    except Exception as e:
+        logger.error(f"查詢健身紀錄發生錯誤：{e}", exc_info=True)
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 發生錯誤，請稍後再試"))
+
         
     else:
         try:
