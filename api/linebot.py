@@ -803,7 +803,7 @@ def handle_message(event):
         liff_url = "https://liff.line.me/2007341042-bzeprj3R"  # 這是新專案上線的網址
         flex_message = FlexSendMessage(
             alt_text="健身紀錄",
-            contents={
+            contents={  # 這是外層的 contents，是一個字典
                 "type": "bubble",
                 "hero": {
                     "type": "image",
@@ -831,17 +831,18 @@ def handle_message(event):
                             }
                         },
                         {
-                              "type": "button",
-                              "style": "secondary",
-                              "height": "md",
-                              "action": {
+                            "type": "button",
+                            "style": "secondary",
+                            "height": "md",
+                            "action": {
                                 "type": "message",
                                 "label": "健身紀錄查詢",
                                 "text": "健身紀錄查詢"
                             }
+                        }
                     ]
                 }
-            }
+            }  # 這是外層的 contents 的結尾
         )
         line_bot_api.reply_message(event.reply_token, flex_message)
 
