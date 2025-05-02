@@ -803,47 +803,69 @@ def handle_message(event):
         flex_message = FlexSendMessage(
             alt_text="健身紀錄",
             contents={
-                "type": "bubble",
-                "hero": {
-                    "type": "image",
-                    "url": "https://i.imgur.com/sevvXcU.jpeg",  # 替換成您的新圖片網址
-                    "size": "full",
-                    "aspectRatio": "20:13",
-                    "aspectMode": "cover",
-                    "action": {
-                        "type": "uri",
-                        "uri": liff_url
-                    }
-                },
-                "body": {
-                    "type": "box",
-                    "layout": "vertical",  # 將 layout 改為 vertical
-                    "contents": [
-                        {
-                            "type": "button",
-                            "style": "primary",
-                            "height": "md",
+                "type": "carousel",
+                "contents": [
+                    {
+                        "type": "bubble",
+                        "hero": {
+                            "type": "image",
+                            "url": "https://i.imgur.com/sevvXcU.jpeg",  # 替換為場地圖片
+                            "size": "full",
+                            "aspectRatio": "20:13",
+                            "aspectMode": "cover"
                             "action": {
-                                "type": "uri",
-                                "label": "開始記錄今日健身！",
-                                "uri": liff_url
+                            "type": "uri",
+                            "uri": liff_url
                             }
                         },
-                        {
-                            "type": "button",
-                            "style": "secondary",
-                            "height": "md",
-                            "action": {
-                                "type": "message",
-                                "label": "健身紀錄查詢",
-                                "text": "健身紀錄查詢"
-                            }
+                        "body": {
+                            "type": "box",
+                            "layout": "vertical",
+                            "contents": [
+                                {
+                                    "type": "text",
+                                    "text": "📚 健身紀錄日誌",
+                                    "weight": "bold",
+                                    "size": "xl"
+                                },
+                                {
+                                    "type": "text",
+                                    "text": "紀錄你的健身事項",
+                                    "size": "sm",
+                                    "wrap": True,
+                                    "color": "#666666"
+                                }
+                            ]
+                        },
+                        "footer": {
+                            "type": "box",
+                            "layout": "vertical",
+                            "spacing": "sm",
+                            "contents": [
+                                {
+                                    "type": "button",
+                                    "action": {
+                                        "type": "uri",
+                                        "label": "開始記錄今日健身！",
+                                        "uri": liff_url
+                                    },
+                                    "style": "primary"
+                                },
+                                {
+                                    "type": "button",
+                                    "action": {
+                                        "type": "message",
+                                        "label": "健身紀錄查詢",
+                                        "text": "健身紀錄查詢"
+                                    }
+                                }
+                            ]
                         }
-                    ]
-                }
+                    }
+                ]
             }
         )
-        line_bot_api.reply_message(event.reply_token, flex_message)
+        line_bot_api.reply_message(event.reply_token, flex_message))
 
     elif user_msg == "查詢健身紀錄":  # 第一次查詢，要求輸入姓名
         user_state[user_id] = "waiting_for_name"
