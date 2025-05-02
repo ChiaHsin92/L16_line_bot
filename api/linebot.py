@@ -817,7 +817,7 @@ def handle_message(event):
                 },
                 "body": {
                     "type": "box",
-                    "layout": "vertical",
+                    "layout": "horizontal",
                     "contents": [
                         {
                             "type": "button",
@@ -835,8 +835,8 @@ def handle_message(event):
                             "height": "md",
                             "action": {
                                 "type": "message",
-                                "label": "健身紀錄查詢",
-                                "text": "健身紀錄查詢"
+                                "label": "查詢健身紀錄",
+                                "text": "查詢健身紀錄"
                             }
                         }
                     ]
@@ -845,7 +845,7 @@ def handle_message(event):
         )
         line_bot_api.reply_message(event.reply_token, flex_message)
 
-    elif user_msg == "健身紀錄查詢":  # 第一次查詢，要求輸入姓名
+    elif user_msg == "查詢健身紀錄":  # 第一次查詢，要求輸入姓名
         user_state[user_id] = "waiting_for_name"
         line_bot_api.reply_message(
             event.reply_token,
