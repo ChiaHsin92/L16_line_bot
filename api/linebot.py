@@ -829,7 +829,7 @@ def handle_message(event):
                                 "label": "開始記錄今日健身！",
                                 "uri": liff_url
                             }
-                        }
+                        },
                         {
                               "type": "button",
                               "style": "secondary",
