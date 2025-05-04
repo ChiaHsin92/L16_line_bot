@@ -125,7 +125,105 @@ def handle_message(event):
     
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
         
-    if user_msg == "常見問題":
+
+
+    elif user_msg == "健身紀錄":
+        liff_url = "https://liff.line.me/2007341042-bzeprj3R"  # 這是新專案上線的網址
+        flex_message = FlexSendMessage(
+            alt_text="健身紀錄",
+            contents={
+                "type": "carousel",
+                "contents": [
+                    {
+                        "type": "bubble",
+                        "hero": {
+                            "type": "image",
+                            "url": "https://i.imgur.com/sevvXcU.jpeg",  # 替換為場地圖片
+                            "size": "full",
+                            "aspectRatio": "20:13",
+                            "aspectMode": "cover"
+                        },
+                        "body": {
+                            "type": "box",
+                            "layout": "vertical",
+                            "contents": [
+                                {
+                                    "type": "text",
+                                    "text": "📚 健身紀錄日誌",
+                                    "weight": "bold",
+                                    "size": "xl"
+                                },
+                                {
+                                    "type": "text",
+                                    "text": "紀錄你的健身事項",
+                                    "size": "sm",
+                                    "wrap": True,
+                                    "color": "#666666"
+                                }
+                            ]
+                        },
+                        "footer": {
+                            "type": "box",
+                            "layout": "vertical",
+                            "spacing": "sm",
+                            "contents": [
+                                {
+                                    "type": "button",
+                                    "action": {
+                                        "type": "uri",
+                                        "label": "開始記錄今日健身！",
+                                        "uri": liff_url
+                                    },
+                                    "style": "primary"
+                                },
+                                {
+                                    "type": "button",
+                                    "action": {
+                                        "type": "message",
+                                        "label": "查詢健身紀錄",
+                                        "text": "查詢健身紀錄"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        )
+        line_bot_api.reply_message(event.reply_token, flex_message)
+
+    elif user_msg == "查詢健身紀錄":
+        user_states[user_id] = "awaiting_fitness_name"  # 新增狀態
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text="請輸入您的姓名以查詢健身紀錄：")
+        )
+
+    elif user_states.get(user_id) == "awaiting_fitness_name":
+        user_states.pop(user_id)  # 清除狀態
+        name = user_msg.strip()
+
+        try:
+            # 你的查詢 Google Sheets 的程式碼
+            # 範例：
+            client = get_gspread_client()
+            sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("健身紀錄")  # 替換為你的工作表名稱
+            records = sheet.get_all_records()
+            matched_records = [record for record in records if record.get("姓名") == name]
+
+            if matched_records:
+                reply_text = "查詢到以下健身紀錄：\n"
+                for record in matched_records:
+                    reply_text += f"日期：{record.get('date')}, 運動項目：{record.get('activity')}, 時長：{record.get('time')} 分鐘, 備註：{record.get('note')}\n"
+            else:
+                reply_text = "查無此姓名的健身紀錄。"
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
+
+        except Exception as e:
+            logger.error(f"查詢健身紀錄發生錯誤：{e}", exc_info=True)
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 發生錯誤，請稍後再試"))
+            
+    elif user_msg == "常見問題":
         faq_categories = ["準備運動", "會員方案", "課程", "其他"]
         buttons = [
             MessageAction(label=cat, text=cat)
@@ -797,71 +895,6 @@ def handle_message(event):
                 event.reply_token,
                 TextSendMessage(text=f"⚠ 無法查詢課程內容（錯誤訊息：{str(e)}）")
             )
-        
-    elif user_msg == "健身紀錄":
-        liff_url = "https://liff.line.me/2007341042-bzeprj3R"  # 這是新專案上線的網址
-        flex_message = FlexSendMessage(
-            alt_text="健身紀錄",
-            contents={
-                "type": "carousel",
-                "contents": [
-                    {
-                        "type": "bubble",
-                        "hero": {
-                            "type": "image",
-                            "url": "https://i.imgur.com/sevvXcU.jpeg",  # 替換為場地圖片
-                            "size": "full",
-                            "aspectRatio": "20:13",
-                            "aspectMode": "cover"
-                        },
-                        "body": {
-                            "type": "box",
-                            "layout": "vertical",
-                            "contents": [
-                                {
-                                    "type": "text",
-                                    "text": "📚 健身紀錄日誌",
-                                    "weight": "bold",
-                                    "size": "xl"
-                                },
-                                {
-                                    "type": "text",
-                                    "text": "紀錄你的健身事項",
-                                    "size": "sm",
-                                    "wrap": True,
-                                    "color": "#666666"
-                                }
-                            ]
-                        },
-                        "footer": {
-                            "type": "box",
-                            "layout": "vertical",
-                            "spacing": "sm",
-                            "contents": [
-                                {
-                                    "type": "button",
-                                    "action": {
-                                        "type": "uri",
-                                        "label": "開始記錄今日健身！",
-                                        "uri": liff_url
-                                    },
-                                    "style": "primary"
-                                },
-                                {
-                                    "type": "button",
-                                    "action": {
-                                        "type": "message",
-                                        "label": "查詢健身紀錄",
-                                        "text": "查詢健身紀錄"
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        )
-        line_bot_api.reply_message(event.reply_token, flex_message)
 
     else:
         try:
@@ -935,47 +968,6 @@ def handle_message(event):
         except Exception as e:
             logger.error(f"場地詳情查詢失敗：{e}", exc_info=True)
             pass
-
-
-@line_handler.add(MessageEvent, message=TextMessage)
-def handle_message(event):
-    user_id = event.source.user_id
-    user_msg = event.message.text.strip()
-    logger.info(f"使用者 {user_id} 傳送訊息：{user_msg}")
-
-    # ... (你現有的程式碼)
-
-    elif user_msg == "查詢健身紀錄":
-        user_states[user_id] = "waiting_for_name"  # 儲存使用者狀態
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text="請輸入您的姓名以查詢健身紀錄：")
-        )
-
-    elif user_states.get(user_id) == "waiting_for_name":
-        name = user_msg.strip()
-        user_states.pop(user_id, None)  # 移除使用者的狀態 (如果存在)
-
-        # ... (你現有的查詢 Google Sheets 並回覆的程式碼)
-        try:
-            client = get_gspread_client()
-            sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("會員健身紀錄")  # 確保這是正確的工作表名稱
-            records = sheet.get_all_records()
-            matched_records = [record for record in records if record.get("紀錄姓名") == name]
-
-            if matched_records:
-                reply_text = "查詢到以下健身紀錄：\n"
-                for record in matched_records:
-                    reply_text += f"日期：{record.get('date')}, 運動項目：{record.get('activity')}, 時長：{record.get('time')} 分鐘, 備註：{record.get('note')}\n"
-            else:
-                reply_text = "查無此姓名的健身紀錄。"
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
-
-        except Exception as e:
-            logger.error(f"查詢健身紀錄失敗：{e}", exc_info=True)
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="查詢健身紀錄時發生錯誤，請稍後再試。"))
-
-
 
 if __name__ == "__main__":
     app.run()
