@@ -863,38 +863,44 @@ def handle_message(event):
         )
         line_bot_api.reply_message(event.reply_token, flex_message)
 
-    elif user_msg == "查詢健身紀錄":  # 第一次查詢，要求輸入姓名
-        user_state[user_id] = "waiting_for_name"
+@line_handler.add(MessageEvent, message=TextMessage)
+def handle_message(event):
+    user_id = event.source.user_id
+    user_msg = event.message.text.strip()
+    logger.info(f"使用者 {user_id} 傳送訊息：{user_msg}")
+
+    # ... (你現有的程式碼)
+
+    elif user_msg == "查詢健身紀錄":
+        user_states[user_id] = "waiting_for_name"  # 儲存使用者狀態
         line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text="請輸入您的姓名以查詢健身紀錄：")
         )
 
-    elif user_state.get(user_id) == "waiting_for_name":  #  使用者輸入姓名後，進行查詢
+    elif user_states.get(user_id) == "waiting_for_name":
         name = user_msg.strip()
-        user_state.pop(user_id)  # 清除狀態
+        user_states.pop(user_id, None)  # 移除使用者的狀態 (如果存在)
 
+        # ... (你現有的查詢 Google Sheets 並回覆的程式碼)
         try:
-            response = requests.get(
-                "https://script.google.com/macros/s/AKfycbwzv98n99vi7YDUo3EXwsmvI-0sqAqPPcvKu-sz7cbgx_IFHf0kwn-mQK3xudBYlKzNRQ/exec",  # ✅ 換成你自己的網址
-                params={"name": name}
-            )
-            if response.status_code == 200:
-                img_url = response.text.strip()
-                if img_url.startswith("https://"):
-                    image_msg = ImageSendMessage(
-                        original_content_url=img_url,
-                        preview_image_url=img_url
-                    )
-                    line_bot_api.reply_message(event.reply_token, image_msg)
-                else:
-                    line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 查無健身紀錄或圖片載入失敗"))
+            client = get_gspread_client()
+            sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("健身紀錄")  # 確保這是正確的工作表名稱
+            records = sheet.get_all_records()
+            matched_records = [record for record in records if record.get("姓名") == name]
+
+            if matched_records:
+                reply_text = "查詢到以下健身紀錄：\n"
+                for record in matched_records:
+                    reply_text += f"日期：{record.get('date')}, 運動項目：{record.get('activity')}, 時長：{record.get('time')} 分鐘, 備註：{record.get('note')}\n"
             else:
-                line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 查詢失敗，請稍後再試"))
+                reply_text = "查無此姓名的健身紀錄。"
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
 
         except Exception as e:
-            logger.error(f"查詢健身紀錄發生錯誤：{e}", exc_info=True)
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 發生錯誤，請稍後再試"))
+            logger.error(f"查詢健身紀錄失敗：{e}", exc_info=True)
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="查詢健身紀錄時發生錯誤，請稍後再試。"))
+
 
     else:
         try:
