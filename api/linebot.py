@@ -207,9 +207,9 @@ def handle_message(event):
             # 你的查詢 Google Sheets 的程式碼
             # 範例：
             client = get_gspread_client()
-            sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("健身紀錄")  # 替換為你的工作表名稱
+            sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("會員健身紀錄")  # 替換為你的工作表名稱
             records = sheet.get_all_records()
-            matched_records = [record for record in records if record.get("姓名") == name]
+            matched_records = [record for record in records if record.get("紀錄姓名") == name]
 
             if matched_records:
                 reply_text = "查詢到以下健身紀錄：\n"
