@@ -669,7 +669,7 @@ def handle_message(event):
                                 "action": {
                                     "type": "message",
                                     "label": "立即預約",
-                                    "text": f"我要預約 {row.get('課程名稱')}"  # Include course name in the message
+                                    "text": f"我要預約"  # Include course name in the message
                                 }
                             }
                         ]
@@ -707,7 +707,7 @@ def handle_message(event):
 
             bubbles = []
             for row in matched[:10]:
-                bubbles.append({
+                bubble_contents = {
                     "type": "bubble",
                     "body": {
                         "type": "box",
@@ -721,8 +721,25 @@ def handle_message(event):
                             {"type": "text", "text": f"⏱️ 時間：{row.get('時間', '未提供')}", "size": "sm"},
                             {"type": "text", "text": f"💲 價格：{row.get('課程價格', '未定')}", "size": "sm"}
                         ]
+                    },
+                    "footer": {  # Add the footer for the button
+                        "type": "box",
+                        "layout": "vertical",
+                        "spacing": "sm",
+                        "contents": [
+                            {
+                                "type": "button",
+                                "style": "primary",
+                                "action": {
+                                    "type": "message",
+                                    "label": "立即預約",
+                                    "text": f"我要預約"  # Include course name in the message
+                                }
+                            }
+                        ]
                     }
-                })
+                }
+                bubbles.append(bubble_contents)
 
             line_bot_api.reply_message(
                 event.reply_token,
