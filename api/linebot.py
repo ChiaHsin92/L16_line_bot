@@ -863,45 +863,6 @@ def handle_message(event):
         )
         line_bot_api.reply_message(event.reply_token, flex_message)
 
-@line_handler.add(MessageEvent, message=TextMessage)
-def handle_message(event):
-    user_id = event.source.user_id
-    user_msg = event.message.text.strip()
-    logger.info(f"使用者 {user_id} 傳送訊息：{user_msg}")
-
-    # ... (你現有的程式碼)
-
-    elif user_msg == "查詢健身紀錄":
-        user_states[user_id] = "waiting_for_name"  # 儲存使用者狀態
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text="請輸入您的姓名以查詢健身紀錄：")
-        )
-
-    elif user_states.get(user_id) == "waiting_for_name":
-        name = user_msg.strip()
-        user_states.pop(user_id, None)  # 移除使用者的狀態 (如果存在)
-
-        # ... (你現有的查詢 Google Sheets 並回覆的程式碼)
-        try:
-            client = get_gspread_client()
-            sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("會員健身紀錄")  # 確保這是正確的工作表名稱
-            records = sheet.get_all_records()
-            matched_records = [record for record in records if record.get("紀錄姓名") == name]
-
-            if matched_records:
-                reply_text = "查詢到以下健身紀錄：\n"
-                for record in matched_records:
-                    reply_text += f"日期：{record.get('date')}, 運動項目：{record.get('activity')}, 時長：{record.get('time')} 分鐘, 備註：{record.get('note')}\n"
-            else:
-                reply_text = "查無此姓名的健身紀錄。"
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
-
-        except Exception as e:
-            logger.error(f"查詢健身紀錄失敗：{e}", exc_info=True)
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="查詢健身紀錄時發生錯誤，請稍後再試。"))
-
-
     else:
         try:
             client = get_gspread_client()
@@ -974,6 +935,47 @@ def handle_message(event):
         except Exception as e:
             logger.error(f"場地詳情查詢失敗：{e}", exc_info=True)
             pass
+
+
+@line_handler.add(MessageEvent, message=TextMessage)
+def handle_message(event):
+    user_id = event.source.user_id
+    user_msg = event.message.text.strip()
+    logger.info(f"使用者 {user_id} 傳送訊息：{user_msg}")
+
+    # ... (你現有的程式碼)
+
+    elif user_msg == "查詢健身紀錄":
+        user_states[user_id] = "waiting_for_name"  # 儲存使用者狀態
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text="請輸入您的姓名以查詢健身紀錄：")
+        )
+
+    elif user_states.get(user_id) == "waiting_for_name":
+        name = user_msg.strip()
+        user_states.pop(user_id, None)  # 移除使用者的狀態 (如果存在)
+
+        # ... (你現有的查詢 Google Sheets 並回覆的程式碼)
+        try:
+            client = get_gspread_client()
+            sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("會員健身紀錄")  # 確保這是正確的工作表名稱
+            records = sheet.get_all_records()
+            matched_records = [record for record in records if record.get("紀錄姓名") == name]
+
+            if matched_records:
+                reply_text = "查詢到以下健身紀錄：\n"
+                for record in matched_records:
+                    reply_text += f"日期：{record.get('date')}, 運動項目：{record.get('activity')}, 時長：{record.get('time')} 分鐘, 備註：{record.get('note')}\n"
+            else:
+                reply_text = "查無此姓名的健身紀錄。"
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
+
+        except Exception as e:
+            logger.error(f"查詢健身紀錄失敗：{e}", exc_info=True)
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="查詢健身紀錄時發生錯誤，請稍後再試。"))
+
+
 
 if __name__ == "__main__":
     app.run()
