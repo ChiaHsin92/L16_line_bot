@@ -214,7 +214,13 @@ def handle_message(event):
             if matched_records:
                 reply_text = "查詢到以下健身紀錄：\n"
                 for record in matched_records:
-                    reply_text += f"日期：{record.get('日期')}, 運動項目：{record.get('運動項目')}, 時長：{record.get('時長')} 分鐘, 備註：{record.get('備註')}\n"
+                    reply_text += (
+                        f"📅 日期：{record.get('日期', '無資料')}\n"
+                        f"🏋️ 運動項目：{record.get('運動項目', '無資料')}\n"
+                        f"⏱️ 時長：{record.get('時長', '無資料')} 分鐘\n"
+                        f"📝 備註：{record.get('備註', '無資料')}\n"
+                        f"---\n"  # 分隔線
+                    )
             else:
                 reply_text = "查無此姓名的健身紀錄。"
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
