@@ -192,41 +192,33 @@ def handle_message(event):
         )
         line_bot_api.reply_message(event.reply_token, flex_message)
 
-    elif user_msg == "查詢健身紀錄":  # 第一次查詢，要求輸入姓名
-        user_state[user_id] = "waiting_for_name"
+    elif user_msg == "查詢健身紀錄":
+        user_states[user_id] = "awaiting_fitness_name"  # 新增狀態
         line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text="請輸入您的姓名以查詢健身紀錄：")
         )
-    
-    elif user_state.get(user_id) == "waiting_for_name":  #  使用者輸入姓名後，進行查詢
+
+    elif user_states.get(user_id) == "awaiting_fitness_name":
+        user_states.pop(user_id)  # 清除狀態
         name = user_msg.strip()
-        user_state.pop(user_id)  # 清除狀態
-    
+
         try:
+            # 你的查詢 Google Sheets 的程式碼
+            # 範例：
             client = get_gspread_client()
             sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("會員健身紀錄")  # 替換為你的工作表名稱
             records = sheet.get_all_records()
-            logger.info(f"讀取到的所有紀錄：{records}")  # 輸出所有紀錄
-    
-            matched_records = [record for record in records if record.get("紀錄姓名") == name]  # ✅ 使用正確的欄位名稱
-            logger.info(f"找到的符合紀錄：{matched_records}")  # 輸出符合的紀錄
-    
+            matched_records = [record for record in records if record.get("紀錄姓名") == name]
+
             if matched_records:
                 reply_text = "查詢到以下健身紀錄：\n"
                 for record in matched_records:
-                    # 使用 get() 避免 KeyError，並提供預設值
-                    date = record.get("日期", "無資料")
-                    activity = record.get("運動項目", "無資料")
-                    time = record.get("時長", "無資料")
-                    note = record.get("備註", "無資料")
-                    reply_text += f"日期：{date}, 運動項目：{activity}, 時長：{time} 分鐘, 備註：{note}\n"
-                line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
-    
+                    reply_text += f"日期：{record.get('日期')}, 運動項目：{record.get('運動項目')}, 時長：{record.get('時長')} 分鐘, 備註：{record.get('備註')}\n"
             else:
                 reply_text = "查無此姓名的健身紀錄。"
-                line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
-    
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
+
         except Exception as e:
             logger.error(f"查詢健身紀錄發生錯誤：{e}", exc_info=True)
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 發生錯誤，請稍後再試"))
