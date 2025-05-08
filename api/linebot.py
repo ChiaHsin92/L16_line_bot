@@ -103,13 +103,18 @@ def handle_message(event):
                 )
             else:
                 # 2️⃣ 嘗試拆解姓名 + 電話（如 王小明0912345678）
-                match = re.match(r"(.+?)(09\d{8})", keyword)
+                match = re.search(r"(.+?)(09\d{8})", keyword)
                 if match:
                     name, phone = match.groups()
+                    phone_no_zero = phone[1:]  # 移除開頭 0：0912345678 -> 912345678
+                
+                    # Debug log 可加上這行：
+                    # print(f"查詢姓名: {name}，電話: {phone_no_zero}")
+                
                     member_data = next(
                         (row for row in records
                          if row.get("姓名", "").replace(" ", "") == name
-                         and str(row.get("電話", "")).strip() == phone),
+                         and str(row.get("電話", "")).strip() == phone_no_zero),
                         None
                     )
                 else:
