@@ -213,30 +213,31 @@ def handle_message(event):
             TextSendMessage(text="請輸入名字與電話號碼以查詢健身紀錄（例如：熊享瘦0912345678)")
         )
 
-    elif user_states.get(user_id) == "awaiting_fitness_name":
-        user_states.pop(user_id)  # 清除狀態
-        name_phone_input = user_msg.strip()
+    elif user_states.get(user_id) == "awaiting_member_info":
+        user_states.pop(user_id)
+        keyword = user_msg.strip()
+        member_data = None
     
         try:
-            import re
-            match = re.search(r"(.+?)(09\d{8})", name_phone_input)
-            if not match:
-                raise ValueError("輸入格式錯誤！\n請輸入正確的姓名+手機號碼\n（例如：熊享瘦0912345678）")
-    
-            user_name, user_phone = match.groups()
-            phone_no_zero = user_phone[1:]  # 去除開頭 0：0912345678 -> 912345678
-    
             client = get_gspread_client()
             sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("會員健身紀錄")
             records = sheet.get_all_records()
     
-            matched_records = [
-                record for record in records
-                if record.get("紀錄姓名", "").replace(" ", "") == user_name
-                and str(record.get("紀錄電話", "")).strip() == phone_no_zero
+            # 檢查格式：姓名 + 手機號碼（如 熊享瘦0912345678）
+            match = re.search(r"(.+?)(09\d{8})", keyword)
+            if not match:
+                raise ValueError("輸入格式錯誤！\n請輸入正確的姓名+手機號碼 (例如：熊享瘦0912345678)")
+    
+            name, phone = match.groups()
+            phone_no_zero = phone[1:]  # 移除開頭 0
+    
+            member_data = [
+                row for row in records
+                if row.get("紀錄姓名", "").replace(" ", "") == name
+                and str(row.get("紀錄電話", "")).strip() == phone_no_zero
             ]
     
-            if matched_records:
+            if member_data:
                 reply_text = "📋 查詢到以下健身紀錄：\n"
                 for record in matched_records:
                     reply_text += (
