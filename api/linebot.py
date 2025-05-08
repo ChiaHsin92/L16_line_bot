@@ -80,7 +80,7 @@ def handle_message(event):
         user_states[user_id] = "awaiting_member_info"
         line_bot_api.reply_message(
             event.reply_token,
-            TextSendMessage(text="🆔 請輸入您的會員編號：\n⚠️ 忘記會員編號請輸入名字與電話號碼（例如：王小明0912345678）")
+            TextSendMessage(text="🆔 請輸入您的會員編號：\n⚠️\n忘記會員編號請輸入名字與電話號碼（例如：王小明0912345678）")
         )
     
     elif user_states.get(user_id) == "awaiting_member_info":
@@ -216,23 +216,22 @@ def handle_message(event):
         name_phone_input = user_msg.strip()
     
         try:
-            # 嘗試使用正則表達式解析姓名與電話（如 王小明0912345678）
             import re
-            match = re.match(r"(.+?)(09\d{8})", name_phone_input)
+            match = re.search(r"(.+?)(09\d{8})", name_phone_input)
             if not match:
-                raise ValueError("格式錯誤，請輸入：姓名+手機號碼，例如：王小明0912345678")
+                raise ValueError("⚠️ 請依照格式輸入：姓名 + 手機號碼，例如：王小明0912345678")
     
             user_name, user_phone = match.groups()
+            phone_no_zero = user_phone[1:]  # 去除開頭 0：0912345678 -> 912345678
     
-            # 讀取 Google Sheets 資料
             client = get_gspread_client()
             sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("會員健身紀錄")
             records = sheet.get_all_records()
     
-            # 根據「姓名」與「電話」欄位同時比對
             matched_records = [
                 record for record in records
-                if record.get("紀錄姓名", "").replace(" ", "") == user_name and record.get("紀錄電話", "") == user_phone
+                if record.get("紀錄姓名", "").replace(" ", "") == user_name
+                and str(record.get("紀錄電話", "")).strip() == phone_no_zero
             ]
     
             if matched_records:
@@ -252,7 +251,6 @@ def handle_message(event):
             reply_text = f"⚠️ 發生錯誤：{str(e)}"
     
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
-
             
     elif user_msg == "常見問題":
         faq_categories = ["準備運動", "會員方案", "課程", "其他"]
