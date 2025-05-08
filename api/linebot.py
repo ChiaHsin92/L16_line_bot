@@ -78,67 +78,67 @@ def handle_message(event):
         line_bot_api.reply_message(event.reply_token, template)
 
     elif user_msg == "查詢會員資料":
-            user_states[user_id] = "awaiting_member_info"
-            line_bot_api.reply_message(
-                event.reply_token,
-                TextSendMessage(text="🆔 請輸入您的會員編號：\n\n⚠️忘記會員編號⚠️\n請輸入名字與電話號碼\n（例如：熊享瘦0912345678）")
-            )
-    
-        elif user_states.get(user_id) == "awaiting_member_info":
-            user_states.pop(user_id)
-            keyword = user_msg.strip()
-    
-            try:
-                import re
-                client = get_gspread_client()
-                sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("會員資料")
-                records = sheet.get_all_records()
-    
-                member_data = None
-    
-                # 1️⃣ 判斷是否為會員編號（如 A00001）
-                if re.match(r"^[A-Z]\d{5}$", keyword.upper()):
+        user_states[user_id] = "awaiting_member_info"
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text="🆔 請輸入您的會員編號：\n\n⚠️忘記會員編號⚠️\n請輸入名字與電話號碼\n（例如：熊享瘦0912345678）")
+        )
+
+    elif user_states.get(user_id) == "awaiting_member_info":
+        user_states.pop(user_id)
+        keyword = user_msg.strip()
+
+        try:
+            import re
+            client = get_gspread_client()
+            sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("會員資料")
+            records = sheet.get_all_records()
+
+            member_data = None
+
+            # 1️⃣ 判斷是否為會員編號（如 A00001）
+            if re.match(r"^[A-Z]\d{5}$", keyword.upper()):
+                member_data = next(
+                    (row for row in records if str(row["會員編號"]).strip().upper() == keyword.upper()),
+                    None
+                )
+            else:
+                # 2️⃣ 嘗試拆解姓名 + 電話（如 王小明0912345678）
+                match = re.search(r"(.+?)(09\d{8})", keyword)
+                if match:
+                    name, phone = match.groups()
+                    phone_no_zero = phone[1:]  # 移除開頭 0：0912345678 -> 912345678
+
+                    # Debug log 可加上這行：
+                    # print(f"查詢姓名: {name}，電話: {phone_no_zero}")
+
                     member_data = next(
-                        (row for row in records if str(row["會員編號"]).strip().upper() == keyword.upper()),
+                        (row for row in records
+                         if row.get("姓名", "").replace(" ", "") == name
+                         and str(row.get("電話", "")).strip() == phone_no_zero),
                         None
                     )
                 else:
-                    # 2️⃣ 嘗試拆解姓名 + 電話（如 王小明0912345678）
-                    match = re.search(r"(.+?)(09\d{8})", keyword)
-                    if match:
-                        name, phone = match.groups()
-                        phone_no_zero = phone[1:]  # 移除開頭 0：0912345678 -> 912345678
-    
-                        # Debug log 可加上這行：
-                        # print(f"查詢姓名: {name}，電話: {phone_no_zero}")
-    
-                        member_data = next(
-                            (row for row in records
-                             if row.get("姓名", "").replace(" ", "") == name
-                             and str(row.get("電話", "")).strip() == phone_no_zero),
-                            None
-                        )
-                    else:
-                        raise ValueError("輸入格式錯誤！\n請輸入正確的會員編號或姓名+手機號碼(例如：熊享瘦0912345678)")
-    
-                if member_data:
-                    reply_text = (
-                        f"✅ 查詢成功\n\n"
-                        f"👤 姓名：{member_data['姓名']}\n\n"
-                        f"📱 電話：0{member_data['電話']}\n\n"
-                        f"🧾 會員類型：{member_data['會員類型']}\n\n"
-                        f"📌 狀態：{member_data['會員狀態']}\n\n"
-                        f"🎯 點數：{member_data['會員點數']}\n\n"
-                        f"⏳ 到期日：{member_data['會員到期日']}"
-                    )
-                else:
-                    reply_text = "❌ 查無此會員資料，請確認姓名與電話或會員編號是否正確。"
-    
-            except Exception as e:
-                reply_text = f"❌ 查詢失敗：{str(e)}"
-                logger.error(f"會員查詢錯誤：{e}", exc_info=True)
-    
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
+                    raise ValueError("輸入格式錯誤！\n請輸入正確的會員編號或姓名+手機號碼(例如：熊享瘦0912345678)")
+
+            if member_data:
+                reply_text = (
+                    f"✅ 查詢成功\n\n"
+                    f"👤 姓名：{member_data['姓名']}\n\n"
+                    f"📱 電話：0{member_data['電話']}\n\n"
+                    f"🧾 會員類型：{member_data['會員類型']}\n\n"
+                    f"📌 狀態：{member_data['會員狀態']}\n\n"
+                    f"🎯 點數：{member_data['會員點數']}\n\n"
+                    f"⏳ 到期日：{member_data['會員到期日']}"
+                )
+            else:
+                reply_text = "❌ 查無此會員資料，請確認姓名與電話或會員編號是否正確。"
+
+        except Exception as e:
+            reply_text = f"❌ 查詢失敗：{str(e)}"
+            logger.error(f"會員查詢錯誤：{e}", exc_info=True)
+
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
 
     elif user_msg == "健身紀錄":
         liff_url = "https://liff.line.me/2007341042-bzeprj3R"  # 這是新專案上線的網址
