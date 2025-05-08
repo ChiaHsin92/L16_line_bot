@@ -62,22 +62,8 @@ def handle_message(event):
     user_id = event.source.user_id
     user_msg = event.message.text.strip()
     logger.info(f"使用者 {user_id} 傳送訊息：{user_msg}")
-    # 會員專區選單
-    if user_msg == "會員專區":
-        template = TemplateSendMessage(
-            alt_text="會員功能選單",
-            template=ButtonsTemplate(
-                title="會員專區",
-                text="請選擇功能",
-                actions=[
-                    MessageAction(label="查詢會員資料", text="查詢會員資料"),
-                    MessageAction(label="健身紀錄", text="健身紀錄"),
-                ]
-            )
-        )
-        line_bot_api.reply_message(event.reply_token, template)
 
-    elif re.match(r"^\d{4}[-/]\d{2}[-/]\d{2}$", user_msg):
+    if re.match(r"^\d{4}[-/]\d{2}[-/]\d{2}$", user_msg):
         query_date = user_msg.replace("/", "-").strip()
         try:
             client = get_gspread_client()
@@ -140,6 +126,21 @@ def handle_message(event):
                 event.reply_token,
                 TextSendMessage(text=f"⚠ 無法查詢課程內容（錯誤訊息：{str(e)}）")
             )
+            
+    # 會員專區選單
+    elif user_msg == "會員專區":
+        template = TemplateSendMessage(
+            alt_text="會員功能選單",
+            template=ButtonsTemplate(
+                title="會員專區",
+                text="請選擇功能",
+                actions=[
+                    MessageAction(label="查詢會員資料", text="查詢會員資料"),
+                    MessageAction(label="健身紀錄", text="健身紀錄"),
+                ]
+            )
+        )
+        line_bot_api.reply_message(event.reply_token, template)
 
     elif user_msg == "查詢會員資料":
         user_states[user_id] = "awaiting_member_info"
