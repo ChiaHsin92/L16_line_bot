@@ -201,33 +201,46 @@ def handle_message(event):
 
     elif user_states.get(user_id) == "awaiting_fitness_name":
         user_states.pop(user_id)  # 清除狀態
-        name = user_msg.strip()
-
+        name_phone_input = user_msg.strip()
+    
         try:
-            # 你的查詢 Google Sheets 的程式碼
-            # 範例：
+            # 嘗試使用正則表達式解析姓名與電話（如 王小明0912345678）
+            import re
+            match = re.match(r"(.+?)(09\d{8})", name_phone_input)
+            if not match:
+                raise ValueError("格式錯誤，請輸入：姓名+手機號碼，例如：王小明0912345678")
+    
+            user_name, user_phone = match.groups()
+    
+            # 讀取 Google Sheets 資料
             client = get_gspread_client()
-            sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("會員健身紀錄")  # 替換為你的工作表名稱
+            sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("會員健身紀錄")
             records = sheet.get_all_records()
-            matched_records = [record for record in records if record.get("紀錄電話") == name]
-
+    
+            # 根據「姓名」與「電話」欄位同時比對
+            matched_records = [
+                record for record in records
+                if record.get("紀錄姓名", "").replace(" ", "") == user_name and record.get("紀錄電話", "") == user_phone
+            ]
+    
             if matched_records:
-                reply_text = "查詢到以下健身紀錄：\n"
+                reply_text = "📋 查詢到以下健身紀錄：\n"
                 for record in matched_records:
                     reply_text += (
                         f"📅 日期：{record.get('日期', '無資料')}\n"
                         f"🏋️ 運動項目：{record.get('運動項目', '無資料')}\n"
                         f"⏱️ 時長：{record.get('時長', '無資料')} 分鐘\n"
                         f"📝 備註：{record.get('備註', '無資料')}\n"
-                        f"---\n"  # 分隔線
+                        f"---\n"
                     )
             else:
-                reply_text = "查無此姓名的健身紀錄。"
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
-
+                reply_text = "❌ 查無此姓名與電話號碼的健身紀錄，請確認輸入是否正確。"
+    
         except Exception as e:
-            logger.error(f"查詢健身紀錄發生錯誤：{e}", exc_info=True)
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 發生錯誤，請稍後再試"))
+            reply_text = f"⚠️ 發生錯誤：{str(e)}"
+    
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
+
             
     elif user_msg == "常見問題":
         faq_categories = ["準備運動", "會員方案", "課程", "其他"]
