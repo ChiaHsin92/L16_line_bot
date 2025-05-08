@@ -961,80 +961,79 @@ def handle_message(event):
                 TextSendMessage(text=f"⚠ 無法查詢課程內容（錯誤訊息：{str(e)}）")
             )
 
-
-
     else:
-        try:
-            client = get_gspread_client()
-            sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("場地資料")
-            records = sheet.get_all_records()
-
-            matched = next((row for row in records if row.get("名稱") == user_msg), None)
-
-            if matched and matched.get("圖片1", "").startswith("https"):
-                bubble = {
-                    "type": "bubble",
-                    "hero": {
-                        "type": "image",
-                        "url": matched["圖片1"],
-                        "size": "full",
-                        "aspectRatio": "20:13",
-                        "aspectMode": "cover"
-                    },
-                    "body": {
-                        "type": "box",
-                        "layout": "vertical",
-                        "spacing": "sm",
-                        "contents": [
-                            {
-                                "type": "text",
-                                "text": matched["名稱"],
-                                "weight": "bold",
-                                "size": "xl",
-                                "wrap": True
-                            },
-                            {
-                                "type": "text",
-                                "text": matched["描述"],
-                                "size": "sm",
-                                "wrap": True,
-                                "color": "#666666"
-                            }
-                        ]
-                    }
-                }
-            
-                # 如果類型為「上課教室」，加上 footer 的立即預約按鈕
-                if matched.get("類型") == "上課教室":
-                    bubble["footer"] = {
-                        "type": "box",
-                        "layout": "vertical",
-                        "spacing": "sm",
-                        "contents": [
-                            {
-                                "type": "button",
-                                "style": "primary",
-                                "action": {
-                                    "type": "message",
-                                    "label": "立即預約",
-                                    "text": "我要預約"
+            try:
+                client = get_gspread_client()
+                sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("場地資料")
+                records = sheet.get_all_records()
+    
+                matched = next((row for row in records if row.get("名稱") == user_msg), None)
+    
+                if matched and matched.get("圖片1", "").startswith("https"):
+                    # (之前的 bubble 訊息程式碼)
+                    bubble = {
+                        "type": "bubble",
+                        "hero": {
+                            "type": "image",
+                            "url": matched["圖片1"],
+                            "size": "full",
+                            "aspectRatio": "20:13",
+                            "aspectMode": "cover"
+                        },
+                        "body": {
+                            "type": "box",
+                            "layout": "vertical",
+                            "spacing": "sm",
+                            "contents": [
+                                {
+                                    "type": "text",
+                                    "text": matched["名稱"],
+                                    "weight": "bold",
+                                    "size": "xl",
+                                    "wrap": True
+                                },
+                                {
+                                    "type": "text",
+                                    "text": matched["描述"],
+                                    "size": "sm",
+                                    "wrap": True,
+                                    "color": "#666666"
                                 }
-                            }
-                        ]
+                            ]
+                        }
                     }
-            
-                flex_msg = FlexSendMessage(
-                    alt_text=f"{matched['名稱']} 詳細資訊",
-                    contents=bubble
-                )
-                line_bot_api.reply_message(event.reply_token, flex_msg)
-
-            else:
-                line_bot_api.reply_message(event.reply_token, TextSendMessage())
-
-        except Exception as e:
-            logger.error(f"場地詳情查詢失敗：{e}", exc_info=True)
-            pass
+    
+                    # 如果類型為「上課教室」，加上 footer 的立即預約按鈕
+                    if matched.get("類型") == "上課教室":
+                        bubble["footer"] = {
+                            "type": "box",
+                            "layout": "vertical",
+                            "spacing": "sm",
+                            "contents": [
+                                {
+                                    "type": "button",
+                                    "style": "primary",
+                                    "action": {
+                                        "type": "message",
+                                        "label": "立即預約",
+                                        "text": "我要預約"
+                                    }
+                                }
+                            ]
+                        }
+    
+                    flex_msg = FlexSendMessage(
+                        alt_text=f"{matched['名稱']} 詳細資訊",
+                        contents=bubble
+                    )
+                    line_bot_api.reply_message(event.reply_token, flex_msg)
+    
+                else:
+                    line_bot_api.reply_message(event.reply_token, TextSendMessage(text="🤔 抱歉，找不到您查詢的場地資訊。"))
+    
+            except Exception as e:
+                logger.error(f"場地詳情查詢失敗：{e}", exc_info=True)
+                line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 查詢場地資訊時發生錯誤。"))
 
 if __name__ == "__main__":
     app.run()
