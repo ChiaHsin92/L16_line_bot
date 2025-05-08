@@ -80,29 +80,41 @@ def handle_message(event):
         user_states[user_id] = "awaiting_member_info"
         line_bot_api.reply_message(
             event.reply_token,
-            TextSendMessage(text="🆔 請輸入您的會員編號：\n⚠️\n忘記會員編號請輸入名字與電話號碼（例如：王XX0912345678）")
+            TextSendMessage(text="🆔 請輸入您的會員編號：\n⚠️ 忘記會員編號請輸入名字與電話號碼（例如：王小明0912345678）")
         )
-
+    
     elif user_states.get(user_id) == "awaiting_member_info":
         user_states.pop(user_id)
         keyword = user_msg.strip()
     
         try:
+            import re
             client = get_gspread_client()
             sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("會員資料")
             records = sheet.get_all_records()
     
-            # 判斷輸入是編號還是姓名
-            if re.match(r"^[A-Z]\d{5}$", keyword.upper()):  # 判斷是 A00001 類型
+            member_data = None
+    
+            # 1️⃣ 判斷是否為會員編號（如 A00001）
+            if re.match(r"^[A-Z]\d{5}$", keyword.upper()):
                 member_data = next(
                     (row for row in records if str(row["會員編號"]).strip().upper() == keyword.upper()),
                     None
                 )
             else:
-                member_data = next(
-                    (row for row in records if keyword in row["名加電"]),
-                    None
-                )
+                # 2️⃣ 嘗試拆解姓名 + 電話（如 王小明0912345678）
+                match = re.match(r"(.+?)(09\d{8})", keyword)
+                if match:
+                    name, phone = match.groups()
+                    member_data = next(
+                        (row for row in records
+                         if row.get("姓名", "").replace(" ", "") == name
+                         and str(row.get("電話", "")).strip() == phone),
+                        None
+                    )
+                else:
+                    raise ValueError("輸入格式錯誤，請輸入正確的會員編號，或姓名+手機號碼（如：王小明0912345678）")
+    
             if member_data:
                 reply_text = (
                     f"✅ 查詢成功\n"
@@ -113,19 +125,14 @@ def handle_message(event):
                     f"🎯 點數：{member_data['會員點數']}\n"
                     f"⏳ 到期日：{member_data['會員到期日']}"
                 )
-                flex_message = FlexSendMessage(
-                    alt_text=f"{member_data['姓名']}的會員資料",
-                )
             else:
-                reply_text = "❌ 查無此會員資料，請確認後再試一次。"
+                reply_text = "❌ 查無此會員資料，請確認姓名與電話或會員編號是否正確。"
     
         except Exception as e:
             reply_text = f"❌ 查詢失敗：{str(e)}"
             logger.error(f"會員查詢錯誤：{e}", exc_info=True)
     
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
-        
-
 
     elif user_msg == "健身紀錄":
         liff_url = "https://liff.line.me/2007341042-bzeprj3R"  # 這是新專案上線的網址
