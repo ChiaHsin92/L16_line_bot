@@ -81,7 +81,7 @@ def handle_message(event):
         user_states[user_id] = "awaiting_member_info"
         line_bot_api.reply_message(
             event.reply_token,
-            TextSendMessage(text="🆔 請輸入您的會員編號：\n⚠️\n忘記會員編號請輸入名字與電話號碼（例如：熊享瘦0912345678）")
+            TextSendMessage(text="🆔 請輸入您的會員編號：\n\n⚠️\n忘記會員編號請輸入名字與電話號碼（例如：熊享瘦0912345678）")
         )
     
     elif user_states.get(user_id) == "awaiting_member_info":
@@ -123,12 +123,12 @@ def handle_message(event):
     
             if member_data:
                 reply_text = (
-                    f"✅ 查詢成功\n"
-                    f"👤 姓名：{member_data['姓名']}\n"
-                    f"📱 電話：0{member_data['電話']}\n"
-                    f"🧾 會員類型：{member_data['會員類型']}\n"
-                    f"📌 狀態：{member_data['會員狀態']}\n"
-                    f"🎯 點數：{member_data['會員點數']}\n"
+                    f"✅ 查詢成功\n\n"
+                    f"👤 姓名：{member_data['姓名']}\n\n"
+                    f"📱 電話：0{member_data['電話']}\n\n"
+                    f"🧾 會員類型：{member_data['會員類型']}\n\n"
+                    f"📌 狀態：{member_data['會員狀態']}\n\n"
+                    f"🎯 點數：{member_data['會員點數']}\n\n"
                     f"⏳ 到期日：{member_data['會員到期日']}"
                 )
             else:
@@ -249,7 +249,7 @@ def handle_message(event):
                 reply_text = "❌ 查無此姓名與電話號碼的健身紀錄，請確認輸入是否正確。"
     
         except Exception as e:
-            reply_text = f"⚠ 發生錯誤：{str(e)}"
+            reply_text = f"❌ 查詢失敗：{str(e)}"
     
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
             
