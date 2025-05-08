@@ -80,7 +80,7 @@ def handle_message(event):
         user_states[user_id] = "awaiting_member_info"
         line_bot_api.reply_message(
             event.reply_token,
-            TextSendMessage(text="🆔 請輸入您的會員編號：\n⚠️\n忘記會員編號請輸入名字與電話號碼（例如：王小明0912345678）")
+            TextSendMessage(text="🆔 請輸入您的會員編號：\n⚠️\n忘記會員編號請輸入名字與電話號碼（例如：王OO0912345678）")
         )
     
     elif user_states.get(user_id) == "awaiting_member_info":
@@ -118,7 +118,7 @@ def handle_message(event):
                         None
                     )
                 else:
-                    raise ValueError("輸入格式錯誤，請輸入正確的會員編號，或姓名+手機號碼（如：王小明0912345678）")
+                    raise ValueError("輸入格式錯誤，請輸入正確的會員編號，或姓名+手機號碼（如：王OO0912345678）")
     
             if member_data:
                 reply_text = (
@@ -208,7 +208,7 @@ def handle_message(event):
         user_states[user_id] = "awaiting_fitness_name"  # 新增狀態
         line_bot_api.reply_message(
             event.reply_token,
-            TextSendMessage(text="🆔 請輸入名字與電話號碼以查詢健身紀錄（例如：王XX0912345678）：")
+            TextSendMessage(text="請輸入名字與電話號碼以查詢健身紀錄（例如：王OO0912345678)")
         )
 
     elif user_states.get(user_id) == "awaiting_fitness_name":
@@ -219,7 +219,7 @@ def handle_message(event):
             import re
             match = re.search(r"(.+?)(09\d{8})", name_phone_input)
             if not match:
-                raise ValueError("⚠️ 請依照格式輸入：姓名 + 手機號碼，例如：王小明0912345678")
+                raise ValueError("⚠️ 請依照格式輸入：姓名 + 手機號碼，例如：王OO0912345678")
     
             user_name, user_phone = match.groups()
             phone_no_zero = user_phone[1:]  # 去除開頭 0：0912345678 -> 912345678
