@@ -14,6 +14,7 @@ import tempfile
 import sys
 import logging
 import re
+
 app = Flask(__name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
@@ -118,7 +119,7 @@ def handle_message(event):
                         None
                     )
                 else:
-                    raise ValueError("輸入格式錯誤，請輸入正確的會員編號，或姓名+手機號碼（如：熊享瘦0912345678）")
+                    raise ValueError("\n輸入格式錯誤，請輸入正確的會員編號或姓名+手機號碼（例如：熊享瘦0912345678）")
     
             if member_data:
                 reply_text = (
@@ -219,7 +220,7 @@ def handle_message(event):
             import re
             match = re.search(r"(.+?)(09\d{8})", name_phone_input)
             if not match:
-                raise ValueError("⚠️ 請依照格式輸入：姓名 + 手機號碼，例如：熊享瘦0912345678")
+                raise ValueError("\n請依照格式輸入正確的姓名+手機號碼（例如：熊享瘦0912345678）")
     
             user_name, user_phone = match.groups()
             phone_no_zero = user_phone[1:]  # 去除開頭 0：0912345678 -> 912345678
@@ -248,7 +249,7 @@ def handle_message(event):
                 reply_text = "❌ 查無此姓名與電話號碼的健身紀錄，請確認輸入是否正確。"
     
         except Exception as e:
-            reply_text = f"⚠️ 發生錯誤：{str(e)}"
+            reply_text = f"⚠ 發生錯誤：{str(e)}"
     
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
             
@@ -858,7 +859,7 @@ def handle_message(event):
              line_bot_api.reply_message(event.reply_token, flex_message)
  
          except Exception as e:
-             logger.error(f"健身教練查詢失敗：{e}", exc_info=True)
+             logger.error(f"⚠ 健身教練查詢失敗：{e}", exc_info=True)
              line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"⚠ 發生錯誤：{e}"))
 
     elif user_msg == "課程教練":
