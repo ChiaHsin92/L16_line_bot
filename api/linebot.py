@@ -139,6 +139,7 @@ def handle_message(event):
             logger.error(f"會員查詢錯誤：{e}", exc_info=True)
 
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
+        user_states.pop(event.source.user_id, None)
 
     elif user_msg == "健身紀錄":
         liff_url = "https://liff.line.me/2007341042-bzeprj3R"  # 這是新專案上線的網址
@@ -252,6 +253,7 @@ def handle_message(event):
             reply_text = f"❌ 查詢失敗：{str(e)}"
     
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
+        user_states.pop(event.source.user_id, None)
             
     elif user_msg == "常見問題":
         faq_categories = ["準備運動", "會員方案", "課程", "其他"]
