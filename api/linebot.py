@@ -14,6 +14,7 @@ import tempfile
 import sys
 import logging
 import re
+
 app = Flask(__name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
@@ -136,11 +137,124 @@ def handle_message(event):
         except Exception as e:
             reply_text = f"❌ 查詢失敗：{str(e)}"
             logger.error(f"會員查詢錯誤：{e}", exc_info=True)
-            return
 
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
-        
-    if user_msg == "常見問題":
+        return  # ⬅ 防止流程往下跑
+
+    elif user_msg == "健身紀錄":
+        liff_url = "https://liff.line.me/2007341042-bzeprj3R"  # 這是新專案上線的網址
+        flex_message = FlexSendMessage(
+            alt_text="健身紀錄",
+            contents={
+                "type": "carousel",
+                "contents": [
+                    {
+                        "type": "bubble",
+                        "hero": {
+                            "type": "image",
+                            "url": "https://i.imgur.com/sevvXcU.jpeg",  # 替換為場地圖片
+                            "size": "full",
+                            "aspectRatio": "20:13",
+                            "aspectMode": "cover"
+                        },
+                        "body": {
+                            "type": "box",
+                            "layout": "vertical",
+                            "contents": [
+                                {
+                                    "type": "text",
+                                    "text": "📚 健身紀錄日誌",
+                                    "weight": "bold",
+                                    "size": "xl"
+                                },
+                                {
+                                    "type": "text",
+                                    "text": "紀錄你的健身事項",
+                                    "size": "sm",
+                                    "wrap": True,
+                                    "color": "#666666"
+                                }
+                            ]
+                        },
+                        "footer": {
+                            "type": "box",
+                            "layout": "vertical",
+                            "spacing": "sm",
+                            "contents": [
+                                {
+                                    "type": "button",
+                                    "action": {
+                                        "type": "uri",
+                                        "label": "開始記錄今日健身！",
+                                        "uri": liff_url
+                                    },
+                                    "style": "primary"
+                                },
+                                {
+                                    "type": "button",
+                                    "action": {
+                                        "type": "message",
+                                        "label": "查詢健身紀錄",
+                                        "text": "查詢健身紀錄"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        )
+        line_bot_api.reply_message(event.reply_token, flex_message)
+
+    elif user_msg == "查詢健身紀錄":
+        user_states[user_id] = "awaiting_fitness_name"  # 新增狀態
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text="請輸入名字與電話號碼以查詢健身紀錄（例如：熊享瘦0912345678)")
+        )
+
+    elif user_states.get(user_id) == "awaiting_fitness_name":
+        user_states.pop(user_id)  # 清除狀態
+        name_phone_input = user_msg.strip()
+    
+        try:
+            import re
+            match = re.search(r"(.+?)(09\d{8})", name_phone_input)
+            if not match:
+                raise ValueError("輸入格式錯誤！\n請輸入正確的姓名+手機號碼\n（例如：熊享瘦0912345678）")
+    
+            user_name, user_phone = match.groups()
+            phone_no_zero = user_phone[1:]  # 去除開頭 0：0912345678 -> 912345678
+    
+            client = get_gspread_client()
+            sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("會員健身紀錄")
+            records = sheet.get_all_records()
+    
+            matched_records = [
+                record for record in records
+                if record.get("紀錄姓名", "").replace(" ", "") == user_name
+                and str(record.get("紀錄電話", "")).strip() == phone_no_zero
+            ]
+    
+            if matched_records:
+                reply_text = "📋 查詢到以下健身紀錄：\n"
+                for record in matched_records:
+                    reply_text += (
+                        f"📅 日期：{record.get('日期', '無資料')}\n"
+                        f"🏋️ 運動項目：{record.get('運動項目', '無資料')}\n"
+                        f"⏱️ 時長：{record.get('時長', '無資料')} 分鐘\n"
+                        f"📝 備註：{record.get('備註', '無資料')}\n"
+                        f"---\n"
+                    )
+            else:
+                reply_text = "❌ 查無此姓名與電話號碼的健身紀錄，請確認輸入是否正確。"
+    
+        except Exception as e:
+            reply_text = f"❌ 查詢失敗：{str(e)}"
+    
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
+            
+    elif user_msg == "常見問題":
         faq_categories = ["準備運動", "會員方案", "課程", "其他"]
         buttons = [
             MessageAction(label=cat, text=cat)
@@ -160,7 +274,8 @@ def handle_message(event):
         confirm_template = TemplateSendMessage(
             alt_text = 'confirm template',
             template = ConfirmTemplate(
-                text = '🧾',
+                title="常見問題課程分類",
+                text="請選擇分類",
                 actions = [
                     MessageAction(
                         label = '個人教練',
@@ -475,7 +590,7 @@ def handle_message(event):
         except Exception as e:
             logger.error(f"上課教室查詢失敗：{e}", exc_info=True)
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"⚠ 發生錯誤：{e}"))
-            
+
     elif user_msg == "健身教練":
          try:
              client = get_gspread_client()
@@ -554,7 +669,7 @@ def handle_message(event):
              line_bot_api.reply_message(event.reply_token, flex_message)
  
          except Exception as e:
-             logger.error(f"健身教練查詢失敗：{e}", exc_info=True)
+             logger.error(f"⚠ 健身教練查詢失敗：{e}", exc_info=True)
              line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"⚠ 發生錯誤：{e}"))
 
     elif user_msg == "課程教練":
@@ -574,7 +689,7 @@ def handle_message(event):
             )
         )
         line_bot_api.reply_message(event.reply_token, template)
-        
+
     elif user_msg in ["有氧教練", "瑜珈老師", "游泳教練"]:
          try:
              client = get_gspread_client()
@@ -655,7 +770,7 @@ def handle_message(event):
          except Exception as e:
              logger.error(f"課程教練查詢失敗：{e}", exc_info=True)
              line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"⚠ 發生錯誤：{e}"))
-            
+             
     elif user_msg == "課程內容":
         try:
             client = get_gspread_client()
@@ -725,16 +840,16 @@ def handle_message(event):
             client = get_gspread_client()
             sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("課程資料")
             records = sheet.get_all_records()
-
+    
             matched = [row for row in records if row.get("課程類型", "").strip() == user_msg]
-
+    
             if not matched:
                 line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"❌ 查無『{user_msg}』相關課程"))
                 return
-
+    
             bubbles = []
             for row in matched[:10]:
-                bubbles.append({
+                bubble_contents = {
                     "type": "bubble",
                     "body": {
                         "type": "box",
@@ -748,9 +863,26 @@ def handle_message(event):
                             {"type": "text", "text": f"⏱️ 時間：{row.get('時間', '未提供')}", "size": "sm"},
                             {"type": "text", "text": f"💲 價格：{row.get('課程價格', '未定')}", "size": "sm"}
                         ]
+                    },
+                    "footer": {  # Add the footer for the button
+                        "type": "box",
+                        "layout": "vertical",
+                        "spacing": "sm",
+                        "contents": [
+                            {
+                                "type": "button",
+                                "style": "primary",
+                                "action": {
+                                    "type": "message",
+                                    "label": "立即預約",
+                                    "text": f"我要預約"  # Include course name in the message
+                                }
+                            }
+                        ]
                     }
-                })
-
+                }
+                bubbles.append(bubble_contents)
+    
             line_bot_api.reply_message(
                 event.reply_token,
                 FlexSendMessage(
@@ -758,7 +890,7 @@ def handle_message(event):
                     contents={"type": "carousel", "contents": bubbles}
                 )
             )
-
+    
         except Exception as e:
             logger.error(f"課程類型查詢錯誤：{e}", exc_info=True)
             line_bot_api.reply_message(
@@ -781,7 +913,7 @@ def handle_message(event):
 
             bubbles = []
             for row in matched[:10]:
-                bubbles.append({
+                bubble_contents = {
                     "type": "bubble",
                     "body": {
                         "type": "box",
@@ -795,8 +927,25 @@ def handle_message(event):
                             {"type": "text", "text": f"⏱️ 時間：{row.get('時間', '未提供')}", "size": "sm"},
                             {"type": "text", "text": f"💲 價格：{row.get('課程價格', '未定')}", "size": "sm"}
                         ]
+                    },
+                    "footer": {  # Add the footer for the button
+                        "type": "box",
+                        "layout": "vertical",
+                        "spacing": "sm",
+                        "contents": [
+                            {
+                                "type": "button",
+                                "style": "primary",
+                                "action": {
+                                    "type": "message",
+                                    "label": "立即預約",
+                                    "text": f"我要預約"  # Include course name in the message
+                                }
+                            }
+                        ]
                     }
-                })
+                }
+                bubbles.append(bubble_contents)
 
             line_bot_api.reply_message(
                 event.reply_token,
@@ -812,19 +961,22 @@ def handle_message(event):
                 event.reply_token,
                 TextSendMessage(text=f"⚠ 無法查詢課程內容（錯誤訊息：{str(e)}）")
             )
-        
-    elif user_msg == "健身紀錄":
-        liff_url = "https://liff.line.me/2007341042-bzeprj3R"  # 這是新專案上線的網址
-        flex_message = FlexSendMessage(
-            alt_text="健身紀錄",
-            contents={
-                "type": "carousel",
-                "contents": [
-                    {
+
+    else:
+            try:
+                client = get_gspread_client()
+                sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("場地資料")
+                records = sheet.get_all_records()
+    
+                matched = next((row for row in records if row.get("名稱") == user_msg), None)
+    
+                if matched and matched.get("圖片1", "").startswith("https"):
+                    # (之前的 bubble 訊息程式碼)
+                    bubble = {
                         "type": "bubble",
                         "hero": {
                             "type": "image",
-                            "url": "https://i.imgur.com/sevvXcU.jpeg",  # 替換為場地圖片
+                            "url": matched["圖片1"],
                             "size": "full",
                             "aspectRatio": "20:13",
                             "aspectMode": "cover"
@@ -832,157 +984,57 @@ def handle_message(event):
                         "body": {
                             "type": "box",
                             "layout": "vertical",
+                            "spacing": "sm",
                             "contents": [
                                 {
                                     "type": "text",
-                                    "text": "📚 健身紀錄日誌",
+                                    "text": matched["名稱"],
                                     "weight": "bold",
-                                    "size": "xl"
+                                    "size": "xl",
+                                    "wrap": True
                                 },
                                 {
                                     "type": "text",
-                                    "text": "紀錄你的健身事項",
+                                    "text": matched["描述"],
                                     "size": "sm",
                                     "wrap": True,
                                     "color": "#666666"
                                 }
                             ]
-                        },
-                        "footer": {
+                        }
+                    }
+    
+                    # 如果類型為「上課教室」，加上 footer 的立即預約按鈕
+                    if matched.get("類型") == "上課教室":
+                        bubble["footer"] = {
                             "type": "box",
                             "layout": "vertical",
                             "spacing": "sm",
                             "contents": [
                                 {
                                     "type": "button",
-                                    "action": {
-                                        "type": "uri",
-                                        "label": "開始記錄今日健身！",
-                                        "uri": liff_url
-                                    },
-                                    "style": "primary"
-                                },
-                                {
-                                    "type": "button",
+                                    "style": "primary",
                                     "action": {
                                         "type": "message",
-                                        "label": "查詢健身紀錄",
-                                        "text": "查詢健身紀錄"
+                                        "label": "立即預約",
+                                        "text": "我要預約"
                                     }
                                 }
                             ]
                         }
-                    }
-                ]
-            }
-        )
-        line_bot_api.reply_message(event.reply_token, flex_message)
-
-    elif user_msg == "查詢健身紀錄":  # 第一次查詢，要求輸入姓名
-        user_state[user_id] = "waiting_for_name"
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text="請輸入您的姓名以查詢健身紀錄：")
-        )
-
-    elif user_state.get(user_id) == "waiting_for_name":  #  使用者輸入姓名後，進行查詢
-        name = user_msg.strip()
-        user_state.pop(user_id)  # 清除狀態
-
-        try:
-            response = requests.get(
-                "https://script.google.com/macros/s/AKfycbwzv98n99vi7YDUo3EXwsmvI-0sqAqPPcvKu-sz7cbgx_IFHf0kwn-mQK3xudBYlKzNRQ/exec",  # ✅ 換成你自己的網址
-                params={"name": name}
-            )
-            if response.status_code == 200:
-                img_url = response.text.strip()
-                if img_url.startswith("https://"):
-                    image_msg = ImageSendMessage(
-                        original_content_url=img_url,
-                        preview_image_url=img_url
+    
+                    flex_msg = FlexSendMessage(
+                        alt_text=f"{matched['名稱']} 詳細資訊",
+                        contents=bubble
                     )
-                    line_bot_api.reply_message(event.reply_token, image_msg)
+                    line_bot_api.reply_message(event.reply_token, flex_msg)
+    
                 else:
-                    line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 查無健身紀錄或圖片載入失敗"))
-            else:
-                line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 查詢失敗，請稍後再試"))
-
-        except Exception as e:
-            logger.error(f"查詢健身紀錄發生錯誤：{e}", exc_info=True)
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 發生錯誤，請稍後再試"))
-
-    else:
-        try:
-            client = get_gspread_client()
-            sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("場地資料")
-            records = sheet.get_all_records()
-
-            matched = next((row for row in records if row.get("名稱") == user_msg), None)
-
-            if matched and matched.get("圖片1", "").startswith("https"):
-                bubble = {
-                    "type": "bubble",
-                    "hero": {
-                        "type": "image",
-                        "url": matched["圖片1"],
-                        "size": "full",
-                        "aspectRatio": "20:13",
-                        "aspectMode": "cover"
-                    },
-                    "body": {
-                        "type": "box",
-                        "layout": "vertical",
-                        "spacing": "sm",
-                        "contents": [
-                            {
-                                "type": "text",
-                                "text": matched["名稱"],
-                                "weight": "bold",
-                                "size": "xl",
-                                "wrap": True
-                            },
-                            {
-                                "type": "text",
-                                "text": matched["描述"],
-                                "size": "sm",
-                                "wrap": True,
-                                "color": "#666666"
-                            }
-                        ]
-                    }
-                }
-            
-                # 如果類型為「上課教室」，加上 footer 的立即預約按鈕
-                if matched.get("類型") == "上課教室":
-                    bubble["footer"] = {
-                        "type": "box",
-                        "layout": "vertical",
-                        "spacing": "sm",
-                        "contents": [
-                            {
-                                "type": "button",
-                                "style": "primary",
-                                "action": {
-                                    "type": "message",
-                                    "label": "立即預約",
-                                    "text": "我要預約"
-                                }
-                            }
-                        ]
-                    }
-            
-                flex_msg = FlexSendMessage(
-                    alt_text=f"{matched['名稱']} 詳細資訊",
-                    contents=bubble
-                )
-                line_bot_api.reply_message(event.reply_token, flex_msg)
-
-            else:
-                line_bot_api.reply_message(event.reply_token, TextSendMessage())
-
-        except Exception as e:
-            logger.error(f"場地詳情查詢失敗：{e}", exc_info=True)
-            pass
+                    line_bot_api.reply_message(event.reply_token, TextSendMessage(text="🤔 抱歉，找不到您查詢的場地資訊。"))
+    
+            except Exception as e:
+                logger.error(f"場地詳情查詢失敗：{e}", exc_info=True)
+                line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 查詢場地資訊時發生錯誤。"))
 
 if __name__ == "__main__":
     app.run()
