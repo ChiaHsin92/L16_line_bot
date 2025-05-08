@@ -962,6 +962,9 @@ def handle_message(event):
             )
 
     else:
+        logger.info(f"無匹配的指令，user_msg：{user_msg}, 狀態：{user_states.get(user_id)}")
+        
+        if not user_states.get(user_id):  # 確保不是狀態機處理流程中
             try:
                 client = get_gspread_client()
                 sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("場地資料")
@@ -970,7 +973,6 @@ def handle_message(event):
                 matched = next((row for row in records if row.get("名稱") == user_msg), None)
     
                 if matched and matched.get("圖片1", "").startswith("https"):
-                    # (之前的 bubble 訊息程式碼)
                     bubble = {
                         "type": "bubble",
                         "hero": {
@@ -994,7 +996,7 @@ def handle_message(event):
                                 },
                                 {
                                     "type": "text",
-                                    "text": matched["描述"],
+                                    "text": matched.get("描述", "沒有提供描述"),
                                     "size": "sm",
                                     "wrap": True,
                                     "color": "#666666"
@@ -1003,7 +1005,6 @@ def handle_message(event):
                         }
                     }
     
-                    # 如果類型為「上課教室」，加上 footer 的立即預約按鈕
                     if matched.get("類型") == "上課教室":
                         bubble["footer"] = {
                             "type": "box",
@@ -1034,6 +1035,9 @@ def handle_message(event):
             except Exception as e:
                 logger.error(f"場地詳情查詢失敗：{e}", exc_info=True)
                 line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 查詢場地資訊時發生錯誤。"))
+    
+        else:
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 無法識別您的輸入，請依照指示操作。"))
 
 if __name__ == "__main__":
     app.run()
