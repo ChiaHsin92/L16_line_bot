@@ -136,6 +136,7 @@ def handle_message(event):
         except Exception as e:
             reply_text = f"❌ 查詢失敗：{str(e)}"
             logger.error(f"會員查詢錯誤：{e}", exc_info=True)
+            return
 
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
         
