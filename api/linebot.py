@@ -139,7 +139,6 @@ def handle_message(event):
             logger.error(f"會員查詢錯誤：{e}", exc_info=True)
 
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
-        return  # ⬅ 防止流程往下跑
 
     elif user_msg == "健身紀錄":
         liff_url = "https://liff.line.me/2007341042-bzeprj3R"  # 這是新專案上線的網址
@@ -266,7 +265,6 @@ def handle_message(event):
 
             if not matched:
                 line_bot_api.reply_message(event.reply_token, TextSendMessage(text="❌ 該日期無任何課程"))
-                return
 
             bubbles = []
             for row in matched[:10]:
