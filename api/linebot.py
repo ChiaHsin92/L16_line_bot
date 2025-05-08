@@ -77,7 +77,6 @@ def handle_message(event):
         line_bot_api.reply_message(event.reply_token, template)
 
     elif user_msg == "查詢會員資料":
-    elif user_msg == "查詢會員資料":
         user_states[user_id] = "awaiting_member_info"
         line_bot_api.reply_message(
             event.reply_token,
