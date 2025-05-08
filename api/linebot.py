@@ -80,7 +80,7 @@ def handle_message(event):
         user_states[user_id] = "awaiting_member_info"
         line_bot_api.reply_message(
             event.reply_token,
-            TextSendMessage(text="請輸入您的會員編號或姓名：")
+            TextSendMessage(text="請輸入您的會員編號：\n# 忘記會員編號請輸入名字與電話號碼（例如：王XX0912345678）")
         )
 
     elif user_states.get(user_id) == "awaiting_member_info":
@@ -100,14 +100,14 @@ def handle_message(event):
                 )
             else:
                 member_data = next(
-                    (row for row in records if keyword in row["姓名"]),
+                    (row for row in records if keyword in row["名加電"]),
                     None
                 )
             if member_data:
                 reply_text = (
                     f"✅ 查詢成功\n"
                     f"👤 姓名：{member_data['姓名']}\n"
-                    f"📱 電話{member_data['電話']}\n"
+                    f"📱 電話：0{member_data['電話']}\n"
                     f"🧾 會員類型：{member_data['會員類型']}\n"
                     f"📌 狀態：{member_data['會員狀態']}\n"
                     f"🎯 點數：{member_data['會員點數']}\n"
