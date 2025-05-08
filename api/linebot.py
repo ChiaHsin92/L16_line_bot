@@ -897,19 +897,24 @@ def handle_message(event):
                 TextSendMessage(text=f"⚠ 無法查詢課程內容（錯誤：{str(e)}）")
             )
 
-    elif re.match(r"^\d{4}[-/]\d{2}[-/]\d{2}$", user_msg):
-        query_date = user_msg.replace("/", "-").strip()
+    elif re.fullmatch(r"\d{4}[-/]\d{1,2}[-/]\d{1,2}", user_msg.strip()):
         try:
+            import datetime
+            dt = datetime.datetime.strptime(user_msg.strip().replace("/", "-"), "%Y-%m-%d")
+            query_date = dt.strftime("%Y-%m-%d")
+    
+            logger.info(f"查詢日期：{query_date}")
+    
             client = get_gspread_client()
             sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("課程資料")
             records = sheet.get_all_records()
-
+    
             matched = [row for row in records if row.get("開始日期", "").strip() == query_date]
-
+    
             if not matched:
                 line_bot_api.reply_message(event.reply_token, TextSendMessage(text="❌ 該日期無任何課程"))
                 return
-
+    
             bubbles = []
             for row in matched[:10]:
                 bubble_contents = {
@@ -927,7 +932,7 @@ def handle_message(event):
                             {"type": "text", "text": f"💲 價格：{row.get('課程價格', '未定')}", "size": "sm"}
                         ]
                     },
-                    "footer": {  # Add the footer for the button
+                    "footer": {
                         "type": "box",
                         "layout": "vertical",
                         "spacing": "sm",
@@ -938,14 +943,14 @@ def handle_message(event):
                                 "action": {
                                     "type": "message",
                                     "label": "立即預約",
-                                    "text": f"我要預約"  # Include course name in the message
+                                    "text": f"我要預約"
                                 }
                             }
                         ]
                     }
                 }
                 bubbles.append(bubble_contents)
-
+    
             line_bot_api.reply_message(
                 event.reply_token,
                 FlexSendMessage(
@@ -953,14 +958,15 @@ def handle_message(event):
                     contents={"type": "carousel", "contents": bubbles}
                 )
             )
-
+    
+        except ValueError:
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 請輸入正確的日期格式（例如 2025-05-01）"))
         except Exception as e:
             logger.error(f"課程日期查詢錯誤：{e}", exc_info=True)
             line_bot_api.reply_message(
                 event.reply_token,
                 TextSendMessage(text=f"⚠ 無法查詢課程內容（錯誤訊息：{str(e)}）")
             )
-
     
     else:
         logger.info(f"🚨 進入最後 else，收到的 user_msg = {user_msg}")
