@@ -234,6 +234,7 @@ def handle_message(event):
                 record for record in records
                 if record.get("紀錄姓名", "").replace(" ", "") == user_name
                 and str(record.get("紀錄電話", "")).strip() == phone_no_zero
+                None
             ]
     
             if matched_records:
