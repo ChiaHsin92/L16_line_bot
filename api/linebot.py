@@ -1248,6 +1248,72 @@ def handle_message(event):
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
 
     else:
+        if re.match(r"^\d{4}[-/]\d{2}[-/]\d{2}$", user_msg):
+            query_date = user_msg.replace("/", "-").strip()
+            try:
+                client = get_gspread_client()
+                sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("課程資料")
+                records = sheet.get_all_records()
+    
+                matched = [row for row in records if row.get("開始日期", "").strip() == query_date]
+    
+                if not matched:
+                    line_bot_api.reply_message(event.reply_token, TextSendMessage(text="❌ 該日期無任何課程"))
+                    return
+    
+                bubbles = []
+                for row in matched[:10]:
+                    bubble_contents = {
+                        "type": "bubble",
+                        "body": {
+                            "type": "box",
+                            "layout": "vertical",
+                            "spacing": "sm",
+                            "contents": [
+                                {"type": "text", "text": row.get("課程名稱", "（未提供課程名稱）"), "weight": "bold", "size": "lg", "wrap": True},
+                                {"type": "text", "text": f"👨‍🏫 教練：{row.get('教練姓名', '未知')}", "size": "sm", "wrap": True},
+                                {"type": "text", "text": f"📅 開課日期：{row.get('開始日期', '未提供')}", "size": "sm"},
+                                {"type": "text", "text": f"🕒 上課時間：{row.get('上課時間', '未提供')}", "size": "sm"},
+                                {"type": "text", "text": f"⏱️ 時間：{row.get('時間', '未提供')}", "size": "sm"},
+                                {"type": "text", "text": f"💲 價格：{row.get('課程價格', '未定')}", "size": "sm"}
+                            ]
+                        },
+                        "footer": {  # Add the footer for the button
+                            "type": "box",
+                            "layout": "vertical",
+                            "spacing": "sm",
+                            "contents": [
+                                {
+                                    "type": "button",
+                                    "style": "primary",
+                                    "action": {
+                                        "type": "message",
+                                        "label": "立即預約",
+                                        "text": f"我要預約"  # Include course name in the message
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                    bubbles.append(bubble_contents)
+    
+                line_bot_api.reply_message(
+                    event.reply_token,
+                    FlexSendMessage(
+                        alt_text=f"{query_date} 的課程",
+                        contents={"type": "carousel", "contents": bubbles}
+                    )
+                )
+    
+            except Exception as e:
+                logger.error(f"課程日期查詢錯誤：{e}", exc_info=True)
+                line_bot_api.reply_message(
+                    event.reply_token,
+                    TextSendMessage(text=f"⚠ 無法查詢課程內容（錯誤訊息：{str(e)}）")
+                )
+    
+        # 2. 如果不是日期格式，則查詢場地資料
+        else:
             try:
                 client = get_gspread_client()
                 sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("場地資料")
@@ -1256,7 +1322,6 @@ def handle_message(event):
                 matched = next((row for row in records if row.get("名稱") == user_msg), None)
     
                 if matched and matched.get("圖片1", "").startswith("https"):
-                    # (之前的 bubble 訊息程式碼)
                     bubble = {
                         "type": "bubble",
                         "hero": {
@@ -1320,6 +1385,5 @@ def handle_message(event):
             except Exception as e:
                 logger.error(f"場地詳情查詢失敗：{e}", exc_info=True)
                 line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 查詢場地資訊時發生錯誤。"))
-
 if __name__ == "__main__":
     app.run()
