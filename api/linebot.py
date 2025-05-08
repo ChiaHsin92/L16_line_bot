@@ -76,71 +76,7 @@ def handle_message(event):
             )
         )
         line_bot_api.reply_message(event.reply_token, template)
-        
-    elif re.match(r"^\d{4}[-/]\d{2}[-/]\d{2}$", user_msg):
-        query_date = user_msg.replace("/", "-").strip()
-        try:
-            client = get_gspread_client()
-            sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("課程資料")
-            records = sheet.get_all_records()
 
-            matched = [row for row in records if row.get("開始日期", "").strip() == query_date]
-
-            if not matched:
-                line_bot_api.reply_message(event.reply_token, TextSendMessage(text="❌ 該日期無任何課程"))
-                return
-
-            bubbles = []
-            for row in matched[:10]:
-                logger.info(f"比對到的 Google Sheet 日期：{row.get('開始日期', '').strip()}")
-                bubble_contents = {
-                    "type": "bubble",
-                    "body": {
-                        "type": "box",
-                        "layout": "vertical",
-                        "spacing": "sm",
-                        "contents": [
-                            {"type": "text", "text": row.get("課程名稱", "（未提供課程名稱）"), "weight": "bold", "size": "lg", "wrap": True},
-                            {"type": "text", "text": f"👨‍🏫 教練：{row.get('教練姓名', '未知')}", "size": "sm", "wrap": True},
-                            {"type": "text", "text": f"📅 開課日期：{row.get('開始日期', '未提供')}", "size": "sm"},
-                            {"type": "text", "text": f"🕒 上課時間：{row.get('上課時間', '未提供')}", "size": "sm"},
-                            {"type": "text", "text": f"⏱️ 時間：{row.get('時間', '未提供')}", "size": "sm"},
-                            {"type": "text", "text": f"💲 價格：{row.get('課程價格', '未定')}", "size": "sm"}
-                        ]
-                    },
-                    "footer": {  # Add the footer for the button
-                        "type": "box",
-                        "layout": "vertical",
-                        "spacing": "sm",
-                        "contents": [
-                            {
-                                "type": "button",
-                                "style": "primary",
-                                "action": {
-                                    "type": "message",
-                                    "label": "立即預約",
-                                    "text": f"我要預約"  # Include course name in the message
-                                }
-                            }
-                        ]
-                    }
-                }
-                bubbles.append(bubble_contents)
-
-            line_bot_api.reply_message(
-                event.reply_token,
-                FlexSendMessage(
-                    alt_text=f"{query_date} 的課程",
-                    contents={"type": "carousel", "contents": bubbles}
-                )
-            )
-
-        except Exception as e:
-            logger.error(f"課程日期查詢錯誤：{e}", exc_info=True)
-            line_bot_api.reply_message(
-                event.reply_token,
-                TextSendMessage(text=f"⚠ 無法查詢課程內容（錯誤訊息：{str(e)}）")
-            )
     elif user_msg == "查詢會員資料":
         user_states[user_id] = "awaiting_member_info"
         line_bot_api.reply_message(
@@ -606,7 +542,7 @@ def handle_message(event):
                 image_columns = [
                     ImageCarouselColumn(
                         image_url=row["圖片1"],
-                        action=MessageAction(label=row.get("名稱", "查看詳情"), text=row.get("名稱", "查看詳情"))
+                        action=MessageAction(label=row.get("名稱", "查看詳情"), text=f"場地： {row.get('名稱', '查看詳情')}")
                     ) for row in chunk
                 ]
 
@@ -640,7 +576,7 @@ def handle_message(event):
             image_columns = [
                 ImageCarouselColumn(
                     image_url=row["圖片1"],
-                    action=MessageAction(label=row.get("名稱", "查看詳情"), text=row.get("名稱", "查看詳情"))
+                    action=MessageAction(label=row.get("名稱", "查看詳情"), text=f"場地： {row.get('名稱', '查看詳情')}")
                 ) for row in matched
             ]
 
@@ -961,81 +897,144 @@ def handle_message(event):
                 TextSendMessage(text=f"⚠ 無法查詢課程內容（錯誤：{str(e)}）")
             )
 
+    elif re.match(r"^\d{4}[-/]\d{2}[-/]\d{2}$", user_msg):
+        query_date = user_msg.replace("/", "-").strip()
+        try:
+            client = get_gspread_client()
+            sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("課程資料")
+            records = sheet.get_all_records()
 
+            matched = [row for row in records if row.get("開始日期", "").strip() == query_date]
 
-    else:
-            try:
-                client = get_gspread_client()
-                sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("場地資料")
-                records = sheet.get_all_records()
-    
-                matched = next((row for row in records if row.get("名稱") == user_msg), None)
-    
-                if matched and matched.get("圖片1", "").startswith("https"):
-                    # (之前的 bubble 訊息程式碼)
-                    bubble = {
-                        "type": "bubble",
-                        "hero": {
-                            "type": "image",
-                            "url": matched["圖片1"],
-                            "size": "full",
-                            "aspectRatio": "20:13",
-                            "aspectMode": "cover"
-                        },
-                        "body": {
-                            "type": "box",
-                            "layout": "vertical",
-                            "spacing": "sm",
-                            "contents": [
-                                {
-                                    "type": "text",
-                                    "text": matched["名稱"],
-                                    "weight": "bold",
-                                    "size": "xl",
-                                    "wrap": True
-                                },
-                                {
-                                    "type": "text",
-                                    "text": matched["描述"],
-                                    "size": "sm",
-                                    "wrap": True,
-                                    "color": "#666666"
+            if not matched:
+                line_bot_api.reply_message(event.reply_token, TextSendMessage(text="❌ 該日期無任何課程"))
+                return
+
+            bubbles = []
+            for row in matched[:10]:
+                bubble_contents = {
+                    "type": "bubble",
+                    "body": {
+                        "type": "box",
+                        "layout": "vertical",
+                        "spacing": "sm",
+                        "contents": [
+                            {"type": "text", "text": row.get("課程名稱", "（未提供課程名稱）"), "weight": "bold", "size": "lg", "wrap": True},
+                            {"type": "text", "text": f"👨‍🏫 教練：{row.get('教練姓名', '未知')}", "size": "sm", "wrap": True},
+                            {"type": "text", "text": f"📅 開課日期：{row.get('開始日期', '未提供')}", "size": "sm"},
+                            {"type": "text", "text": f"🕒 上課時間：{row.get('上課時間', '未提供')}", "size": "sm"},
+                            {"type": "text", "text": f"⏱️ 時間：{row.get('時間', '未提供')}", "size": "sm"},
+                            {"type": "text", "text": f"💲 價格：{row.get('課程價格', '未定')}", "size": "sm"}
+                        ]
+                    },
+                    "footer": {  # Add the footer for the button
+                        "type": "box",
+                        "layout": "vertical",
+                        "spacing": "sm",
+                        "contents": [
+                            {
+                                "type": "button",
+                                "style": "primary",
+                                "action": {
+                                    "type": "message",
+                                    "label": "立即預約",
+                                    "text": f"我要預約"  # Include course name in the message
                                 }
-                            ]
-                        }
+                            }
+                        ]
                     }
-    
-                    # 如果類型為「上課教室」，加上 footer 的立即預約按鈕
-                    if matched.get("類型") == "上課教室":
-                        bubble["footer"] = {
-                            "type": "box",
-                            "layout": "vertical",
-                            "spacing": "sm",
-                            "contents": [
-                                {
-                                    "type": "button",
-                                    "style": "primary",
-                                    "action": {
-                                        "type": "message",
-                                        "label": "立即預約",
-                                        "text": "我要預約"
-                                    }
+                }
+                bubbles.append(bubble_contents)
+
+            line_bot_api.reply_message(
+                event.reply_token,
+                FlexSendMessage(
+                    alt_text=f"{query_date} 的課程",
+                    contents={"type": "carousel", "contents": bubbles}
+                )
+            )
+
+        except Exception as e:
+            logger.error(f"課程日期查詢錯誤：{e}", exc_info=True)
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text=f"⚠ 無法查詢課程內容（錯誤訊息：{str(e)}）")
+            )
+
+    elif "場地" in user_msg:
+        try:
+            client = get_gspread_client()
+            sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("場地資料")
+            records = sheet.get_all_records()
+
+            # 移除 "場地" 兩個字，並去除前後空白，作為查詢的關鍵字
+            search_term = user_msg.replace("場地", "").strip()
+            matched = next((row for row in records if row.get("名稱") == search_term), None)
+
+            if matched and matched.get("圖片1", "").startswith("https"):
+                bubble = {
+                    "type": "bubble",
+                    "hero": {
+                        "type": "image",
+                        "url": matched["圖片1"],
+                        "size": "full",
+                        "aspectRatio": "20:13",
+                        "aspectMode": "cover"
+                    },
+                    "body": {
+                        "type": "box",
+                        "layout": "vertical",
+                        "spacing": "sm",
+                        "contents": [
+                            {
+                                "type": "text",
+                                "text": matched["名稱"],
+                                "weight": "bold",
+                                "size": "xl",
+                                "wrap": True
+                            },
+                            {
+                                "type": "text",
+                                "text": matched["描述"],
+                                "size": "sm",
+                                "wrap": True,
+                                "color": "#666666"
+                            }
+                        ]
+                    }
+                }
+
+                # 如果類型為「上課教室」，加上 footer 的立即預約按鈕
+                if matched.get("類型") == "上課教室":
+                    bubble["footer"] = {
+                        "type": "box",
+                        "layout": "vertical",
+                        "spacing": "sm",
+                        "contents": [
+                            {
+                                "type": "button",
+                                "style": "primary",
+                                "action": {
+                                    "type": "message",
+                                    "label": "立即預約",
+                                    "text": "我要預約"
                                 }
-                            ]
-                        }
-    
-                    flex_msg = FlexSendMessage(
-                        alt_text=f"{matched['名稱']} 詳細資訊",
-                        contents=bubble
-                    )
-                    line_bot_api.reply_message(event.reply_token, flex_msg)
-    
-                else:
-                    line_bot_api.reply_message(event.reply_token, TextSendMessage(text="🤔 抱歉，找不到您查詢的場地資訊。"))
-    
-            except Exception as e:
-                logger.error(f"場地詳情查詢失敗：{e}", exc_info=True)
-                line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 查詢場地資訊時發生錯誤。"))
+                            }
+                        ]
+                    }
+
+                flex_msg = FlexSendMessage(
+                    alt_text=f"{matched['名稱']} 詳細資訊",
+                    contents=bubble
+                )
+                line_bot_api.reply_message(event.reply_token, flex_msg)
+
+            else:
+                line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"🤔 抱歉，找不到名為 '{search_term}' 的場地資訊。"))
+
+        except Exception as e:
+            logger.error(f"場地詳情查詢失敗：{e}", exc_info=True)
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 查詢場地資訊時發生錯誤。"))
 
 if __name__ == "__main__":
     app.run()
