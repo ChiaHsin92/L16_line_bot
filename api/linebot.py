@@ -862,7 +862,182 @@ def handle_message(event):
             logger.error(f"場地詳情查詢失敗：{e}", exc_info=True)
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 查詢場地資訊時發生錯誤。"))
             
+    elif user_msg == "查詢會員資料":
+        user_states[user_id] = "awaiting_member_info"
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text="🆔 請輸入您的會員編號：\n\n⚠️忘記會員編號⚠️\n請輸入名字與電話號碼\n（例如：熊享瘦0912345678）")
+        )
 
+    elif user_states.get(user_id) == "awaiting_member_info":
+        user_states.pop(user_id)
+        user_input = user_msg.strip()
+
+        try:
+            import re
+            spreadsheet_client = get_gspread_client()
+            member_sheet = spreadsheet_client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("會員資料")
+            member_records = member_sheet.get_all_records()
+
+            member_information = None
+
+            # 1️⃣ 判斷是否為會員編號（如 A00001）
+            if re.match(r"^[A-Z]\d{5}$", user_input.upper()):
+                member_information = next(
+                    (record for record in member_records if str(record["會員編號"]).strip().upper() == user_input.upper()),
+                    None
+                )
+            else:
+                # 2️⃣ 嘗試拆解姓名 + 電話（如 王小明0912345678）
+                name_phone_match = re.search(r"(.+?)(09\d{8})", user_input)
+                if name_phone_match:
+                    member_name, member_phone = name_phone_match.groups()
+                    phone_without_zero = member_phone[1:]  # 移除開頭 0：0912345678 -> 912345678
+
+                    # Debug log 可加上這行：
+                    # print(f"查詢姓名: {member_name}，電話: {phone_without_zero}")
+
+                    member_information = next(
+                        (record for record in member_records
+                         if record.get("姓名", "").replace(" ", "") == member_name
+                         and str(record.get("電話", "")).strip() == phone_without_zero),
+                        None
+                    )
+                else:
+                    raise ValueError("輸入格式錯誤！\n請輸入正確的會員編號或姓名+手機號碼(例如：熊享瘦0912345678)")
+
+            if member_information:
+                reply_message = (
+                    f"✅ 查詢成功\n\n"
+                    f"👤 姓名：{member_information['姓名']}\n\n"
+                    f"📱 電話：0{member_information['電話']}\n\n"
+                    f"🧾 會員類型：{member_information['會員類型']}\n\n"
+                    f"📌 狀態：{member_information['會員狀態']}\n\n"
+                    f"🎯 點數：{member_information['會員點數']}\n\n"
+                    f"⏳ 到期日：{member_information['會員到期日']}"
+                )
+            else:
+                reply_message = "❌ 查無此會員資料，請確認姓名與電話或會員編號是否正確。"
+
+        except Exception as error:
+            reply_message = f"❌ 查詢失敗：{str(error)}"
+            logger.error(f"會員查詢錯誤：{error}", exc_info=True)
+
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_message))
+
+    elif user_msg == "健身紀錄":
+        liff_url = "https://liff.line.me/2007341042-bzeprj3R"  # 這是新專案上線的網址
+        flex_message = FlexSendMessage(
+            alt_text="健身紀錄",
+            contents={
+                "type": "carousel",
+                "contents": [
+                    {
+                        "type": "bubble",
+                        "hero": {
+                            "type": "image",
+                            "url": "https://i.imgur.com/sevvXcU.jpeg",  # 替換為場地圖片
+                            "size": "full",
+                            "aspectRatio": "20:13",
+                            "aspectMode": "cover"
+                        },
+                        "body": {
+                            "type": "box",
+                            "layout": "vertical",
+                            "contents": [
+                                {
+                                    "type": "text",
+                                    "text": "📚 健身紀錄日誌",
+                                    "weight": "bold",
+                                    "size": "xl"
+                                },
+                                {
+                                    "type": "text",
+                                    "text": "紀錄你的健身事項",
+                                    "size": "sm",
+                                    "wrap": True,
+                                    "color": "#666666"
+                                }
+                            ],
+                            "spacing": "sm"
+                        },
+                        "footer": {
+                            "type": "box",
+                            "layout": "vertical",
+                            "contents": [
+                                {
+                                    "type": "button",
+                                    "action": {
+                                        "type": "uri",
+                                        "label": "開始記錄今日健身！",
+                                        "uri": liff_url
+                                    },
+                                    "style": "primary"
+                                },
+                                {
+                                    "type": "button",
+                                    "action": {
+                                        "type": "message",
+                                        "label": "查詢健身紀錄",
+                                        "text": "查詢健身紀錄"
+                                    }
+                                }
+                            ],
+                            "spacing": "sm"
+                        }
+                    }
+                ]
+            }
+        )
+        line_bot_api.reply_message(event.reply_token, flex_message)
+
+    elif user_msg == "查詢健身紀錄":
+        user_states[user_id] = "awaiting_fitness_info"  # 更明確的狀態名稱
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text="請輸入名字與電話號碼以查詢健身紀錄（例如：熊享瘦0912345678)")
+        )
+
+    elif user_states.get(user_id) == "awaiting_fitness_info":
+        user_states.pop(user_id)  # 清除狀態
+        fitness_input = user_msg.strip()
+
+        try:
+            import re
+            name_phone_pattern = re.search(r"(.+?)(09\d{8})", fitness_input)
+            if not name_phone_pattern:
+                raise ValueError("輸入格式錯誤！\n請輸入正確的姓名+手機號碼\n（例如：熊享瘦0912345678）")
+
+            fitness_name, fitness_phone = name_phone_pattern.groups()
+            phone_without_zero = fitness_phone[1:]  # 去除開頭 0：0912345678 -> 912345678
+
+            spreadsheet_client = get_gspread_client()
+            fitness_record_sheet = spreadsheet_client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("會員健身紀錄")
+            fitness_records = fitness_record_sheet.get_all_records()
+
+            matching_records = [
+                record for record in fitness_records
+                if record.get("紀錄姓名", "").replace(" ", "") == fitness_name
+                and str(record.get("紀錄電話", "")).strip() == phone_without_zero
+            ]
+
+            if matching_records:
+                reply_message = "📋 查詢到以下健身紀錄：\n"
+                for record in matching_records:
+                    reply_message += (
+                        f"📅 日期：{record.get('日期', '無資料')}\n"
+                        f"🏋️ 運動項目：{record.get('運動項目', '無資料')}\n"
+                        f"⏱️ 時長：{record.get('時長', '無資料')} 分鐘\n"
+                        f"📝 備註：{record.get('備註', '無資料')}\n"
+                        f"---\n"
+                    )
+            else:
+                reply_message = "❌ 查無此姓名與電話號碼的健身紀錄，請確認輸入是否正確。"
+
+        except Exception as error:
+            reply_message = f"❌ 查詢失敗：{str(error)}"
+
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_message))
 
 
 if __name__ == "__main__":
