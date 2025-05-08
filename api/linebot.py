@@ -898,6 +898,7 @@ def handle_message(event):
             )
 
     elif re.match(r"^\d{4}[-/]\d{2}[-/]\d{2}$", user_msg):
+        print(f"使用者輸入符合日期格式：{user_msg}")
         query_date = user_msg.replace("/", "-").strip()
         try:
             client = get_gspread_client()
@@ -962,6 +963,7 @@ def handle_message(event):
             )
 
     else:
+            print(f"使用者輸入不符合其他格式：{user_msg}") # 加入這行
             try:
                 client = get_gspread_client()
                 sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("場地資料")
