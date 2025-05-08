@@ -781,7 +781,7 @@ def handle_message(event):
                 TextSendMessage(text=f"⚠ 無法查詢課程內容（錯誤訊息：{str(e)}）")
             )
             
-    elif user_msg == "健身教練":
+    elif user_msg == "健身教練1":
          try:
              client = get_gspread_client()
              sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("教練資料")
