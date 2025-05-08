@@ -139,9 +139,120 @@ def handle_message(event):
             logger.error(f"會員查詢錯誤：{e}", exc_info=True)
 
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
-        user_states.pop(event.source.user_id, None)
 
+    elif user_msg == "健身紀錄":
+        liff_url = "https://liff.line.me/2007341042-bzeprj3R"  # 這是新專案上線的網址
+        flex_message = FlexSendMessage(
+            alt_text="健身紀錄",
+            contents={
+                "type": "carousel",
+                "contents": [
+                    {
+                        "type": "bubble",
+                        "hero": {
+                            "type": "image",
+                            "url": "https://i.imgur.com/sevvXcU.jpeg",  # 替換為場地圖片
+                            "size": "full",
+                            "aspectRatio": "20:13",
+                            "aspectMode": "cover"
+                        },
+                        "body": {
+                            "type": "box",
+                            "layout": "vertical",
+                            "contents": [
+                                {
+                                    "type": "text",
+                                    "text": "📚 健身紀錄日誌",
+                                    "weight": "bold",
+                                    "size": "xl"
+                                },
+                                {
+                                    "type": "text",
+                                    "text": "紀錄你的健身事項",
+                                    "size": "sm",
+                                    "wrap": True,
+                                    "color": "#666666"
+                                }
+                            ]
+                        },
+                        "footer": {
+                            "type": "box",
+                            "layout": "vertical",
+                            "spacing": "sm",
+                            "contents": [
+                                {
+                                    "type": "button",
+                                    "action": {
+                                        "type": "uri",
+                                        "label": "開始記錄今日健身！",
+                                        "uri": liff_url
+                                    },
+                                    "style": "primary"
+                                },
+                                {
+                                    "type": "button",
+                                    "action": {
+                                        "type": "message",
+                                        "label": "查詢健身紀錄",
+                                        "text": "查詢健身紀錄"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        )
+        line_bot_api.reply_message(event.reply_token, flex_message)
 
+    elif user_msg == "查詢健身紀錄":
+        user_states[user_id] = "awaiting_fitness_name"  # 新增狀態
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text="請輸入名字與電話號碼以查詢健身紀錄（例如：熊享瘦0912345678)")
+        )
+
+    elif user_states.get(user_id) == "awaiting_fitness_name":
+        user_states.pop(user_id)  # 清除狀態
+        name_phone_input = user_msg.strip()
+    
+        try:
+            import re
+            match = re.search(r"(.+?)(09\d{8})", name_phone_input)
+            if not match:
+                raise ValueError("輸入格式錯誤！\n請輸入正確的姓名+手機號碼\n（例如：熊享瘦0912345678）")
+    
+            user_name, user_phone = match.groups()
+            phone_no_zero = user_phone[1:]  # 去除開頭 0：0912345678 -> 912345678
+    
+            client = get_gspread_client()
+            sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("會員健身紀錄")
+            records = sheet.get_all_records()
+    
+            matched_records = [
+                record for record in records
+                if record.get("紀錄姓名", "").replace(" ", "") == user_name
+                and str(record.get("紀錄電話", "")).strip() == phone_no_zero
+            ]
+    
+            if matched_records:
+                reply_text = "📋 查詢到以下健身紀錄：\n"
+                for record in matched_records:
+                    reply_text += (
+                        f"📅 日期：{record.get('日期', '無資料')}\n"
+                        f"🏋️ 運動項目：{record.get('運動項目', '無資料')}\n"
+                        f"⏱️ 時長：{record.get('時長', '無資料')} 分鐘\n"
+                        f"📝 備註：{record.get('備註', '無資料')}\n"
+                        f"---\n"
+                    )
+            else:
+                reply_text = "❌ 查無此姓名與電話號碼的健身紀錄，請確認輸入是否正確。"
+    
+        except Exception as e:
+            reply_text = f"❌ 查詢失敗：{str(e)}"
+    
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
+            
     elif user_msg == "常見問題":
         faq_categories = ["準備運動", "會員方案", "課程", "其他"]
         buttons = [
@@ -787,7 +898,6 @@ def handle_message(event):
             )
 
     elif re.match(r"^\d{4}[-/]\d{2}[-/]\d{2}$", user_msg):
-        print(f"使用者輸入符合日期格式：{user_msg}")
         query_date = user_msg.replace("/", "-").strip()
         try:
             client = get_gspread_client()
@@ -802,6 +912,7 @@ def handle_message(event):
 
             bubbles = []
             for row in matched[:10]:
+                logger.info(f"比對到的 Google Sheet 日期：{row.get('開始日期', '').strip()}")
                 bubble_contents = {
                     "type": "bubble",
                     "body": {
@@ -852,7 +963,6 @@ def handle_message(event):
             )
 
     else:
-            print(f"使用者輸入不符合其他格式：{user_msg}") # 加入這行
             try:
                 client = get_gspread_client()
                 sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("場地資料")
