@@ -253,6 +253,7 @@ def handle_message(event):
             reply_text = f"❌ 查詢失敗：{str(e)}"
     
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
+        return
             
     elif user_msg == "常見問題":
         faq_categories = ["準備運動", "會員方案", "課程", "其他"]
