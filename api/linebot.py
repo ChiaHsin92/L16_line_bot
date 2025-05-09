@@ -931,16 +931,16 @@ def handle_message(event):
                         "type": "box",
                         "layout": "vertical",
                         "contents": [
-                                {"type": "text", "text": row.get("課程名稱", "（未提供課程名稱）"), "weight": "bold", "size": "lg", "wrap": True},
-                                {"type": "text", "text": f"👨‍🏫 教練：{row.get('教練姓名', '未知')}", "size": "sm", "wrap": True},
-                                {"type": "text", "text": f"📅 開課日期：{row.get('開始日期', '未提供')}", "size": "sm"},
-                                {"type": "text", "text": f"🕒 上課時間：{row.get('上課時間', '未提供')}", "size": "sm"},
-                                {"type": "text", "text": f"⏱️ 時間：{row.get('時間', '未提供')}", "size": "sm"},
-                                {"type": "text", "text": f"💲 價格：{row.get('課程價格', '未定')}", "size": "sm"}
+                            {"type": "text", "text": course.get("課程名稱", "（未提供課程名稱）"), "weight": "bold", "size": "lg", "wrap": True},
+                            {"type": "text", "text": f"👨‍🏫 教練：{course.get('教練姓名', '未知')}", "size": "sm", "wrap": True},
+                            {"type": "text", "text": f"📅 開課日期：{course.get('開始日期', '未提供')}", "size": "sm"},
+                            {"type": "text", "text": f"🕒 上課時間：{course.get('上課時間', '未提供')}", "size": "sm"},
+                            {"type": "text", "text": f"⏱️ 時間：{course.get('時間', '未提供')}", "size": "sm"},
+                            {"type": "text", "text": f"💲 價格：{course.get('課程價格', '未定')}", "size": "sm"}
                         ]
                     }
                 })
-    
+
             carousel = {
                 "type": "carousel",
                 "contents": bubbles
