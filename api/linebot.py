@@ -933,6 +933,7 @@ def handle_message(event):
                     "body": {
                         "type": "box",
                         "layout": "vertical",
+                        "spacing": "sm",
                         "contents": [
                             {"type": "text", "text": course.get("課程名稱", "（未提供課程名稱）"), "weight": "bold", "size": "lg", "wrap": True},
                             {"type": "text", "text": f"👨‍🏫 教練：{course.get('教練姓名', '未知')}", "size": "sm", "wrap": True},
@@ -941,8 +942,25 @@ def handle_message(event):
                             {"type": "text", "text": f"⏱️ 時間：{course.get('時間', '未提供')}", "size": "sm"},
                             {"type": "text", "text": f"💲 價格：{course.get('課程價格', '未定')}", "size": "sm"}
                         ]
+                    },
+                    "footer": {
+                        "type": "box",
+                        "layout": "vertical",
+                        "spacing": "sm",
+                        "contents": [
+                            {
+                                "type": "button",
+                                "style": "primary",
+                                "action": {
+                                    "type": "message",
+                                    "label": "立即預約",
+                                    "text": "我要預約"
+                                }
+                            }
+                        ]
                     }
-                })
+                }
+                bubbles.append(bubble_contents)
     
             carousel = {
                 "type": "carousel",
