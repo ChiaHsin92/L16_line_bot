@@ -85,7 +85,6 @@ def handle_message(event):
         )
 
     elif user_states.get(user_id) == "awaiting_member_info":
-        user_states.pop(user_id)
         keyword = user_msg.strip()
 
         try:
@@ -137,7 +136,7 @@ def handle_message(event):
         except Exception as e:
             reply_text = f"❌ 查詢失敗：{str(e)}"
             logger.error(f"會員查詢錯誤：{e}", exc_info=True)
-
+        user_states.pop(user_id)
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
 
     elif user_msg == "健身紀錄":
@@ -213,7 +212,6 @@ def handle_message(event):
         )
 
     elif user_states.get(user_id) == "awaiting_fitness_name":
-        user_states.pop(user_id)  # 清除狀態
         name_phone_input = user_msg.strip()
     
         try:
@@ -250,7 +248,7 @@ def handle_message(event):
     
         except Exception as e:
             reply_text = f"❌ 查詢失敗：{str(e)}"
-    
+        user_states.pop(user_id)
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
             
     elif user_msg == "常見問題":
