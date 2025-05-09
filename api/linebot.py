@@ -898,6 +898,7 @@ def handle_message(event):
 
     elif user_msg.startswith("日期"):
         try:
+            import re
             # 從使用者訊息提取日期（支援 YYYY-MM-DD 或 YYYY/MM/DD）
             match = re.search(r"\d{4}[-/]\d{2}[-/]\d{2}", user_msg)
             if not match:
