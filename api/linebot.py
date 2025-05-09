@@ -308,72 +308,8 @@ def handle_message(event):
 
         except Exception as e:
             logger.error(f"上課教室查詢失敗：{e}", exc_info=True)
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"⚠ 發生錯誤：{e}"))
-
-from flask import Flask, request, abort
-from linebot import LineBotApi, WebhookHandler
-from linebot.exceptions import InvalidSignatureError
-from linebot.models import (
-    MessageEvent, TextMessage, TextSendMessage,
-    TemplateSendMessage, ButtonsTemplate, MessageAction, FlexSendMessage, ConfirmTemplate, ImageCarouselTemplate, ImageCarouselColumn
-)
-
-import os
-import json
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
-import tempfile
-import sys
-import logging
-import re
-
-app = Flask(__name__)
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
-logger = logging.getLogger(__name__)
-
-line_bot_api = LineBotApi(os.getenv("LINE_CHANNEL_ACCESS_TOKEN"))
-line_handler = WebhookHandler(os.getenv("LINE_CHANNEL_SECRET"))
-user_states = {}
-
-def get_gspread_client():
-    credentials_content = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS_CONTENT")
-    if not credentials_content:
-        logger.error("缺少 GOOGLE_APPLICATION_CREDENTIALS_CONTENT 環境變數")
-        raise ValueError("環境變數未設定")
-    try:
-        with tempfile.NamedTemporaryFile(mode="w+", delete=True, suffix=".json") as temp_file:
-            temp_file.write(credentials_content)
-            temp_file.flush()
-            scope = [
-                "https://spreadsheets.google.com/feeds",
-                "https://www.googleapis.com/auth/drive"
-            ]
-            creds = ServiceAccountCredentials.from_json_keyfile_name(temp_file.name, scope)
-            client = gspread.authorize(creds)
-            return client
-    except Exception as e:
-        logger.error(f"Google Sheets 授權錯誤：{e}", exc_info=True)
-        sys.exit(1)
-@app.route("/")
-def home():
-    return "LINE Bot 正常運作中！"
-
-@app.route("/webhook", methods=["POST"])
-def callback():
-    signature = request.headers["X-Line-Signature"]
-    body = request.get_data(as_text=True)
-    app.logger.info("Request body: " + body)
-    try:
-        line_handler.handle(body, signature)
-    except InvalidSignatureError:
-        abort(400)
-    return "OK"
-
-@line_handler.add(MessageEvent, message=TextMessage)
-def handle_message(event):
-    user_id = event.source.user_id
-    user_msg = event.message.text.strip()
-    logger.info(f"使用者 {user_id} 傳送訊息：{user_msg}")
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"⚠ 發生錯誤：{e}")
+                                       
     # 會員專區選單
     if user_msg == "會員專區":
         template = TemplateSendMessage(
