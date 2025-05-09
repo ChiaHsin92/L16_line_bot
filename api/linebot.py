@@ -5,6 +5,7 @@ from linebot.models import (
     MessageEvent, TextMessage, TextSendMessage,
     TemplateSendMessage, ButtonsTemplate, MessageAction, FlexSendMessage, ConfirmTemplate, ImageCarouselTemplate, ImageCarouselColumn
 )
+from datetime import datetime
 
 import os
 import json
@@ -767,18 +768,18 @@ def handle_message(event):
          except Exception as e:
              logger.error(f"課程教練查詢失敗：{e}", exc_info=True)
              line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"⚠ 發生錯誤：{e}"))
-             
+
     elif user_msg == "課程內容":
         try:
             client = get_gspread_client()
             sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("課程資料")
             records = sheet.get_all_records()
-    
+
             # 提取唯一課程類型
             course_types = list({row["課程類型"].strip() for row in records if row.get("課程類型")})
             course_types = [t for t in course_types if t]
-    
-            # 建立課程類型按鈕（最多5個）
+
+            # 建立按鈕
             buttons = [
                 {
                     "type": "button",
@@ -788,20 +789,9 @@ def handle_message(event):
                         "label": t,
                         "text": t
                     }
-                } for t in course_types[:5]
+                } for t in course_types[:6]
             ]
-    
-            # 加入「📅 日期查詢」按鈕
-            buttons.append({
-                "type": "button",
-                "style": "primary",
-                "action": {
-                    "type": "message",
-                    "label": "📅 日期查詢",
-                    "text": "以日期查詢"
-                }
-            })
-    
+
             bubble = {
                 "type": "bubble",
                 "body": {
@@ -825,17 +815,20 @@ def handle_message(event):
                     ]
                 }
             }
-    
+
             flex_msg = FlexSendMessage(
-                alt_text="課程類型與日期查詢",
+                alt_text="課程類型查詢",
                 contents=bubble
             )
-    
+
             line_bot_api.reply_message(
                 event.reply_token,
-                flex_msg
+                [
+                    flex_msg,
+                    TextSendMessage(text="📅 你也可以輸入日期（例如：日期2025-05-01）查詢當天開課課程。")
+                ]
             )
-    
+
         except Exception as e:
             logger.error(f"課程內容查詢錯誤：{e}", exc_info=True)
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 無法讀取課程資料"))
@@ -902,7 +895,67 @@ def handle_message(event):
                 event.reply_token,
                 TextSendMessage(text=f"⚠ 無法查詢課程內容（錯誤：{str(e)}）")
             )
+elif user_msg.startswith("日期"):
+    try:
+        # 從使用者訊息提取日期
+        match = re.search(r"\d{4}-\d{2}-\d{2}", user_msg)
+        if not match:
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 請輸入正確格式的日期（例如：日期2025-05-01）"))
+            return
+        
+        input_date = match.group(0)
 
+        # 讀取 Google Sheet 資料
+        client = get_gspread_client()
+        sheet = client.open_by_key("1jVhpPNfB6UrRaYZjCjyDR4GZApjYLL4KZXQ1Si63Zyg").worksheet("課程資料")
+        records = sheet.get_all_records()
+
+        # 過濾符合日期的課程
+        matched_courses = [
+            row for row in records
+            if row.get("開始日期") and row["開始日期"].strip() == input_date
+        ]
+
+        if not matched_courses:
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"❌ {input_date} 沒有開課資訊"))
+            return
+
+        # 建立 Flex Message 回覆
+        bubbles = []
+        for course in matched_courses[:10]:  # 最多顯示10筆
+            bubbles.append({
+                "type": "bubble",
+                "size": "kilo",
+                "body": {
+                    "type": "box",
+                    "layout": "vertical",
+                    "contents": [
+                            {"type": "text", "text": row.get("課程名稱", "（未提供課程名稱）"), "weight": "bold", "size": "lg", "wrap": True},
+                            {"type": "text", "text": f"👨‍🏫 教練：{row.get('教練姓名', '未知')}", "size": "sm", "wrap": True},
+                            {"type": "text", "text": f"📅 開課日期：{row.get('開始日期', '未提供')}", "size": "sm"},
+                            {"type": "text", "text": f"🕒 上課時間：{row.get('上課時間', '未提供')}", "size": "sm"},
+                            {"type": "text", "text": f"⏱️ 時間：{row.get('時間', '未提供')}", "size": "sm"},
+                            {"type": "text", "text": f"💲 價格：{row.get('課程價格', '未定')}", "size": "sm"}
+                    ]
+                }
+            })
+
+        carousel = {
+            "type": "carousel",
+            "contents": bubbles
+        }
+
+        flex_msg = FlexSendMessage(
+            alt_text=f"{input_date} 課程查詢結果",
+            contents=carousel
+        )
+
+        line_bot_api.reply_message(event.reply_token, flex_msg)
+
+    except Exception as e:
+        logger.error(f"日期課程查詢錯誤：{e}", exc_info=True)
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text="⚠ 查詢日期課程時發生錯誤"))
+        
     else:
             try:
                 client = get_gspread_client()
