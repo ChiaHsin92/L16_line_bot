@@ -647,9 +647,9 @@ def handle_message(event):
                                  "type": "button",
                                  "style": "primary",
                                  "action": {
-                                     "type": "message",
+                                     "type": "url",
                                      "label": "立即預約",
-                                     "text": f"我要預約"
+                                     "url": "https://docs.google.com/forms/d/e/1FAIpQLSct_FZcn9et_grMYECeT8xLwxaJg-AFMIUDszNusa2AG2gHMg/viewform"
                                  }
                              }
                          ]
