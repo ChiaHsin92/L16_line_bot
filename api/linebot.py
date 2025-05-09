@@ -926,8 +926,8 @@ def handle_message(event):
     
             # 建立 Flex Message 回覆
             bubbles = []
-            for course in matched_courses[:10]:  # 最多顯示10筆
-                bubbles.append({
+            for row in matched_courses[:10]:
+                bubble_contents = {
                     "type": "bubble",
                     "size": "kilo",
                     "body": {
@@ -935,12 +935,12 @@ def handle_message(event):
                         "layout": "vertical",
                         "spacing": "sm",
                         "contents": [
-                            {"type": "text", "text": course.get("課程名稱", "（未提供課程名稱）"), "weight": "bold", "size": "lg", "wrap": True},
-                            {"type": "text", "text": f"👨‍🏫 教練：{course.get('教練姓名', '未知')}", "size": "sm", "wrap": True},
-                            {"type": "text", "text": f"📅 開課日期：{course.get('開始日期', '未提供')}", "size": "sm"},
-                            {"type": "text", "text": f"🕒 上課時間：{course.get('上課時間', '未提供')}", "size": "sm"},
-                            {"type": "text", "text": f"⏱️ 時間：{course.get('時間', '未提供')}", "size": "sm"},
-                            {"type": "text", "text": f"💲 價格：{course.get('課程價格', '未定')}", "size": "sm"}
+                            {"type": "text", "text": row.get("課程名稱", "（未提供課程名稱）"), "weight": "bold", "size": "lg", "wrap": True},
+                            {"type": "text", "text": f"👨‍🏫 教練：{row.get('教練姓名', '未知')}", "size": "sm", "wrap": True},
+                            {"type": "text", "text": f"📅 開課日期：{row.get('開始日期', '未提供')}", "size": "sm"},
+                            {"type": "text", "text": f"🕒 上課時間：{row.get('上課時間', '未提供')}", "size": "sm"},
+                            {"type": "text", "text": f"⏱️ 時間：{row.get('時間', '未提供')}", "size": "sm"},
+                            {"type": "text", "text": f"💲 價格：{row.get('課程價格', '未定')}", "size": "sm"}
                         ]
                     },
                     "footer": {
@@ -961,7 +961,7 @@ def handle_message(event):
                     }
                 }
                 bubbles.append(bubble_contents)
-    
+
             carousel = {
                 "type": "carousel",
                 "contents": bubbles
